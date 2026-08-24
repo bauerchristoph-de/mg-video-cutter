@@ -1,0 +1,18 @@
+{
+  "name": "mg-video-cutter",
+  "owner": {
+    "name": "Christoph Bauer",
+    "email": "info@bauerchristoph.de"
+  },
+  "metadata": {
+    "description": "AI Video-Cutter — Rohvideo rein, fertiges Social-Media-Video raus. Zentral gepflegt, Updates erreichen alle Kunden automatisch.",
+    "version": "0.4.1"
+  },
+  "plugins": [
+    {
+      "name": "ai-video-cutter",
+      "source": "./plugins/ai-video-cutter",
+      "description": "Verwandelt Rohvideos in fertige Social-Media-Videos: Schnitt, Karaoke-Untertitel, Emphasis-Captions im eigenen CI, SFX und Ton-Mastering. Beim ersten Einsatz: Setup-Interview + Marken-Analyse."
+    }
+  ]
+}
