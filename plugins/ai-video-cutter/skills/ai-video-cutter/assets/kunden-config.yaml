@@ -1,0 +1,55 @@
+# kunden-config.yaml — wird im Setup-Interview befüllt (references/setup-interview.md)
+# Liegt im Kundenordner. Gilt für alle Videos automatisch.
+
+kunde:
+  name: ""                      # z. B. "Mehr Geschäft"
+  website: ""
+  social: []                    # Profile, die als CI-Referenz dienen
+
+ci:
+  fonts:
+    standard: Inter-Bold        # Karaoke-Zeile
+    heavy: Inter-Black          # Emphasis (schwerster verfügbarer Schnitt)
+    sub: Inter-SemiBold         # Unterzeilen
+    dateien: []                 # Pfade zu ttf/otf im Projektordner
+  farben:
+    text: '#FFFFFF'
+    akzent: ''                  # GENAU EINE Akzentfarbe (CTA-Farbe aus dem CI)
+    chip: ''                    # i. d. R. == akzent
+    sprecher_b: ''              # optional, nur bei mehreren Sprechern
+  logo: ''                      # PNG mit Transparenz (Abbinder), optional
+
+stil:
+  intensitaet: standard         # ruhig | standard | hart
+  case_emphasis: caps           # caps | mixed
+  anrede: du                    # du | sie (für gekürzte Captions)
+  sfx: true
+
+kanaele:
+  formate: ['9:16']             # 9:16 | 16:9 | 1:1
+  plattformen: []               # instagram, tiktok, youtube, linkedin …
+  standard_ctas: []             # wiederkehrende CTAs als Bausteine
+
+position:
+  band_16zu9: 930               # y-Mitte Karaoke im 1080er-Raster
+  band_9zu16: '62-70%'          # nie über dem Mund
+
+technik:
+  ffmpeg_version: ''            # bei Setup einmal prüfen
+  xfade_transitions: []         # verfügbare Transitions (ffmpeg -h filter=xfade)
+  rohmaterial_ordner: ''
+  ausgabe_ordner: ''
+
+musik:
+  quelle: keine                 # envato | artlist | keine
+  lizenz_hinweis: 'Nur lizenziertes Material; keine Trending-Sounds bei Fremd-Shares.'
+
+begleit_content:                # optionale End-Outputs nach Video-Abnahme
+  caption: true                 # Caption NUR für Kanäle unter kanaele.plattformen
+  titel_varianten: false        # 3 Titel-/Hook-Optionen
+  post_kurzfassung: false       # Kernaussage als eigenständiger Text-Post
+  hashtags: []                  # Stamm-Hashtags des Kunden
+  emojis: dezent                # keine | dezent | viele
+  wording_notizen:              # Setup-Scan, PRO KANAL (derselbe Kunde klingt je Kanal anders)
+    # instagram: 'du, locker, kurze Zeilen, 1-2 Emojis, Stamm-Hashtags am Ende'
+    # linkedin: 'sie, fachlicher Ton, keine Emojis, max 3 Hashtags'
