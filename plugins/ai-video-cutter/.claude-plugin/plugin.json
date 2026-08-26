@@ -1,9 +1,9 @@
 {
   "name": "ai-video-cutter",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "AI Video-Cutter: Rohvideo rein, fertiges Social-Media-Video raus — Schnitt, Karaoke-Untertitel, animierte Emphasis-Captions im eigenen CI, SFX, Ton-Mastering. Erste Aktivierung führt Setup-Interview und Marken-Analyse durch und legt den lokalen Kundenordner an.",
   "author": {
-    "name": "Christoph Bauer",
+    "name": "Mehr Geschäft",
     "email": "info@bauerchristoph.de"
   },
   "license": "Proprietary",

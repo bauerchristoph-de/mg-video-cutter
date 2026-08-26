@@ -1,12 +1,12 @@
 {
   "name": "mg-video-cutter",
   "owner": {
-    "name": "Christoph Bauer",
+    "name": "Mehr Geschäft",
     "email": "info@bauerchristoph.de"
   },
   "metadata": {
     "description": "AI Video-Cutter — Rohvideo rein, fertiges Social-Media-Video raus. Zentral gepflegt, Updates erreichen alle Kunden automatisch.",
-    "version": "0.4.2"
+    "version": "0.4.3"
   },
   "plugins": [
     {
