@@ -30,6 +30,29 @@
 - Keine Standbilder als Lückenfüller. Wenn ein Foto inhaltlich unschlagbar ist: sanfter Push-in (8–12 % Zoom, Ease-OUT) oder Polaroid-Karten-Look (B-Roll läuft unscharf weiter, Fotos poppen als gedrehte Karten mit Schatten rein).
 - Slow-Mo als **Speed-Ramp auf den Action-Peak** (Anlauf normal, ab exakt dem Peak 0,5×; nur 60-fps-Material). Nie zwei Dauer-Slow-Mos hintereinander.
 
+## Wiederholungen & Schnellschnitt-Montagen (Learnings 26.08.2026, „Bewegte Kids" v10→v12)
+
+**Jeder Clip nur einmal pro Video.** Wiederholte Sequenzen fallen dem Kunden
+sofort auf — auch bei 0,5-s-Cuts und auch mit anderem In-Point. Einzige
+erlaubte Ausnahme: EIN bewusstes Bookend (Hook-Clip als Finale-Callback).
+Recap-Montagen am Ende NICHT aus recycelten Clips bauen, sondern aus noch
+ungenutztem Material — der Rohmaterial-Pool gibt das fast immer her.
+
+**Kurze Montage-Clips (≤ 1 s) brauchen nahe, individuelle Aufnahmen.**
+Max. 1–2 Personen pro Clip, keine Weitwinkel oder Gruppen-Totalen — bei
+0,5 s ist ein weites Bild nicht lesbar. Das emotionale Zentrum (die
+ausdrucksstärksten Gesichter) muss im sichtbaren Ausschnitt liegen.
+
+**In-Points nie auf Kameraschwenks oder Reissschwenks** — wirkt wie ein
+Fehler („durch die Halle gefilmt"). Vor Übernahme den In-Point-Frame
+rendern und sichten, nie nach Timecode raten.
+
+**Wiederholungs-QC vor jeder Abgabe (maschinell, nicht per Auge):**
+Szenen-Frames extrahieren (`select='gt(scene,0.25)'`), je Frame einen
+dHash bilden und paarweise vergleichen — Hamming-Distanz ≤ 9 bei
+NICHT-benachbarten Shots = Wiederholung gefunden. Weiße Blitz-/
+Übergangsframes (< 2 KB) vorher ausfiltern.
+
 ## Ad-Ausspielung vs. organisch (dasselbe Rohmaterial, zwei Schnitte)
 
 Im Briefing wird das Ziel festgelegt — die Ausspielungen unterscheiden sich systematisch:
