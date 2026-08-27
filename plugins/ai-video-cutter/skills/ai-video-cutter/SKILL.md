@@ -20,9 +20,15 @@ Rohvideo rein → fertiges, publizierbares Video raus. Dieser Skill bündelt das
 2. `marken-profil.md` im Kundenordner — die angelernte Brand Voice (Tonalität, Wortschatz, Hooks, Video-Stil je Account). Fehlt es, die Marken-Analyse nachholen (`references/marken-analyse.md`) — ohne Profil keine Captions.
 3. `kunden-learnings.md` im Kundenordner — alles, was dieser Kunde dem System schon beigebracht hat. Anwenden statt wiederholen.
 4. `references/schnitt-regeln.md` — Schnitt, Zooms, Transitions, Pausen.
-5. `references/captions.md` — Untertitel-System (Karaoke + Emphasis-Presets).
-6. `references/audio.md` — Ton-Pipeline (Fades, Master, SFX, bekannte Fallen).
-7. `references/render-technik.md` — Render-Architektur und Pflicht-QC (erst vor dem Bauen nötig).
+5. `references/captions.md` — Untertitel-System (Karaoke + Emphasis-Presets, vermessener Referenz-Standard, Kontrast-Gate).
+6. `references/hooks.md` — Hook-Overlays (Creator-Stil, Positionsregeln).
+7. `references/audio.md` — Ton-Pipeline (Fades, Master, SFX, bekannte Fallen).
+8. `references/render-technik.md` — Render-Architektur und Pflicht-QC (erst vor dem Bauen nötig).
+
+**Standards-Echo (Pflicht):** Vor dem ersten Render eines Videos in 5–8 Stichpunkten auflisten,
+welche Standards aus den References angewendet werden (Untertitel-Werte, Position, Kontrast-Maßnahme,
+Hook-Position, SFX-Plan). Wer das Echo nicht schreiben kann, hat die References nicht gelesen —
+beide vom Kunden reklamierten Fehlerserien eines echten Builds hatten genau diese Ursache.
 
 ## Workflow (verbindlich, mit Freigabe-Schleifen)
 
@@ -37,6 +43,8 @@ Klären, bevor irgendwas gerendert wird: Ziel des Videos (organisch / Ad / beide
 ### 2 · Transkript + Analyse
 Audio extrahieren, mit Whisper transkribieren (`word_timestamps=True`, Modell medium, `vad_filter=False`). Wort-Timings sind das Rückgrat von allem — aber Whisper hat bekannte Fehler, die korrigiert werden müssen (Bindestrich-Tokens, verschobene Onsets nach Pausen; Details in `references/audio.md` und `references/render-technik.md`).
 
+**Bild-Analyse gehört dazu:** Luma/Sättigung des Materials messen (`signalstats`). Ist das Material flau oder high-key (kein Schwarzpunkt, Sättigung < 0,10), dem Kunden ein dezentes Color Grading VORSCHLAGEN und bei Ja umsetzen — nie ungefragt, und nie auf Fremd-Quellclips (Reaction-Splits) anwenden.
+
 ### 3 · Schnittplan (Freigabe-Dokument)
 Als Tabelle: Segment | Quellzeit in/out | Zoomstufe | Untertitel-Modus (karaoke/emphasis) | SFX. Dazu in 3 Sätzen: dramaturgische Idee (Hook → Kernaussagen → CTA), welche Stellen Emphasis bekommen und warum. **Erst nach Freigabe bauen.**
 
@@ -46,10 +54,13 @@ Generator-Skript erzeugt alle Assets (Untertitel-PNGs, Emphasis-Sequenzen, SFX-S
 ### 5 · QC vor Lieferung (hartes Gate)
 - Freeze-Scan (`freezedetect`) = 0 Treffer
 - Video- vs. Audio-Streamdauer < 0,1 s Differenz
-- Loudness −14 LUFS ±0,5, True Peak ≤ −1,2 dB
+- Loudness −14 LUFS ±0,5, True Peak ≤ −1,2 dB; bei Fremd-Quellclips: Sprach-Lautheit über alle Quellen angeglichen (≤ 2 dB Differenz)
 - Frame-Strips an 2–3 Untertitel-Zeilenwechseln (kein Leerframe, kein Doppel-Highlight)
+- **Lesbarkeits-Gate:** Frames an den Kartenmitten von mindestens jeder 3. Untertitel-Karte ziehen und ANSEHEN + Luminanz der Textzone messen — helle Schrift auf hellem Grund (weißes Hemd!) ohne Scrim = durchgefallen, egal was die Timing-Gates sagen (Kontrast-Gate in `references/captions.md`)
+- **Kollisions-Check:** Untertitel/Hook liegen nicht über Gesicht, Händen, Logos oder Schrift im Bild
+- **Vollständigkeits-Gate:** jedes Transkript-Wort erscheint in Karaoke oder Emphasis — kein Wort fehlt
 - Onset-Stichprobe: 3–5 Wörter nach Sprechpausen gegen die RMS-Hüllkurve
-- SFX-Events gegen Animations-Onsets abgeglichen (maschinell, nicht nach Gehör)
+- SFX-Events gegen Animations-Onsets abgeglichen (maschinell, nicht nach Gehör); SFX-Peaks gemessen, nicht Dateienden
 
 ### 6 · Lieferung
 Master in voller Qualität in den Ordner `fertig/` + kleine Preview (480p) in den Chat. Bei Feedback: Version hochzählen, nie überschreiben.
