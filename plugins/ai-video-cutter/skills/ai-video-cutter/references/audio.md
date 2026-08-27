@@ -28,3 +28,20 @@ Der Ton entscheidet, ob ein Schnitt professionell wirkt. Jede Regel hier stammt 
 - **`loudnorm` nach `amix` streckt Audio** (One-Pass-Modus, interne 192-kHz-Timestamps): Ergebnis war +0,8 s Länge und wandernder Sync. Deshalb linear mastern (oben Schritt 4).
 - **Whisper-Onsets:** nach Pausen/Schnitten oft 0,2–0,3 s zu FRÜH, bei Plosiven bis 0,2 s zu SPÄT, einzelne Wörter bis 0,5 s verschoben. Bei jedem gemeldeten Sync-Problem die RMS-Hüllkurve messen statt Whisper zu glauben (Onset-Audit in `render-technik.md`).
 - Video- vs. Audio-Streamdauer der Lieferdatei > 0,1 s auseinander = Alarm, nicht liefern.
+
+## Fremdmaterial im Mix (Reaction-/Quellclips)
+
+- **Pro Quelle messen, dann angleichen:** Fremd-Quellclip und eigener Sprecher liegen real oft
+  10+ dB auseinander (gemessen: Quellclip −16,2 LUFS, Sprecher −26/−27 LUFS — ungeglichen wäre
+  der eigene Mann die leiseste Stimme im eigenen Video). Deshalb VOR dem Master jedes Segment
+  mit ebur128 messen und per Segment-Gain auf eine gemeinsame Sprach-Lautheit bringen
+  (Differenz danach ≤ 2 dB), erst dann die Master-Kette fahren.
+
+## Kunden-SFX-Dateien (Pflicht-Vermessung)
+
+- Gelieferte SFX-Dateien nie blind nutzen: Dateilänge ≠ hörbare Länge. Realfall: 1,09-s-Datei,
+  hörbar nur die ersten 0,22 s (Peak bei 0,18 s, Rest Stille) — wer die Datei am Schnitt ENDEN
+  lässt, setzt den Peak 0,87 s zu früh.
+- Vorgehen: Hüllkurve messen, Stille wegschneiden, Datei auf den hörbaren Kern kürzen und den
+  PEAK auf das Ziel-Event legen (bei Whoosh: Peak auf den Schnitt, Start entsprechend davor).
+  Nach dem Render maschinell gegenprüfen (Soll-Event vs. gemessener Peak ≤ 40 ms).

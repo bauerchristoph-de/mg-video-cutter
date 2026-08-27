@@ -57,3 +57,56 @@ Uppercase-Badge in Akzentfarbe im oberen Drittel für Datum/Label — nur wenn d
 - **Weiß-/CI-Blitz** (0,1 s fade-in from color) an Kapitelanfängen — sparsam.
 - Keine Spins, Wipes, Slides in Business-Content.
 - SFX-Paarung: Cut/Zoom → Whoosh, Text → Pop, Reveal/große Zahl → Boom. Framegenau (Details in `audio.md`).
+
+## Vermessener Referenz-Standard (Pflichtwerte)
+
+Diese Werte stammen aus der Vermessung eines abgenommenen Referenz-Schnitts und sind der
+Default für jede Karaoke-Zeile (Farben kommen weiter aus der Kunden-Config):
+
+| Eigenschaft | Wert |
+|---|---|
+| Schriftschnitt | der SCHWERSTE verfügbare Schnitt (ExtraBold/Black), nie Bold wenn schwerer existiert |
+| Textfarbe | Off-White `#F0F0F0` (nie reines Weiß) |
+| Kontur | KEINE (max. 1 px, nur wenn Kunden-CI es verlangt) |
+| Schatten | Gaussian Blur 7, Alpha 0,72, Offset dy 4 — deutlich sichtbar |
+| Chip (aktives Wort) | Padding 13/7 px, Radius 11, exakt auf der Ink-Box |
+| Wörter pro Karte | max. 3 |
+| Zeilenbreite | max. 860 px im 1080er-Raster — nie fast volle Bildbreite |
+
+**Chip-Ausrichtung: Ink-Box, nicht Ascender-Box.** Die Ascender-Box enthält Leerraum über den
+Versalien — daran ausgerichtet sitzt der Chip systematisch zu hoch und die Schrift wirkt nicht mittig.
+Ink-Box einmal mit Referenzstring („Hg“) messen und für ALLE Wörter identisch verwenden,
+sonst springen die Chips beim Wortwechsel.
+
+## Kontrast-Gate (Pflicht vor jedem Render)
+
+Der häufigste Totalschaden: helle Untertitel auf hellem Hintergrund (weißes Hemd, helle Wand)
+— das Video besteht jedes Timing-QC und ist trotzdem unlesbar. Deshalb:
+
+1. **Messen:** Für jede Untertitel-Karte einen Frame an der Kartenmitte ziehen und die mittlere
+   Luminanz des Text-Bereichs messen (`crop` auf die Textzone + `signalstats` YAVG).
+2. **Bewerten:** YAVG > 140 in der Textzone = heller Hintergrund = weiße Schrift ohne
+   Gegenmaßnahme verboten.
+3. **Gegenmaßnahmen-Leiter (in dieser Reihenfolge):**
+   a) **Position innerhalb der erlaubten Zone verschieben** — die dunkelste stabile Teilzone wählen
+      (z. B. tiefer, wenn unten dunkler Boden/Kleidung ist).
+   b) **Ganzzeilen-Scrim:** dunkler halbtransparenter Chip hinter der GESAMTEN Zeile
+      (Schwarz, Alpha 0,35–0,5, gleiche Radius-Logik wie der Wort-Chip) — nicht nur hinter dem Emphasis-Wort.
+   c) Schatten verstärken (Blur 9–10, Alpha 0,85) — nur als Ergänzung, ersetzt a/b nicht.
+4. **Konstanz:** Die gewählte Lösung gilt für das GANZE Video — Position und Stil der Zeile
+   springen nicht von Karte zu Karte.
+
+## Kollisions-Regeln (Pflicht)
+
+- Untertitel liegen NIE über: Gesicht/Mund, Händen mit Objekten, eingeblendeten Logos oder
+  Schrift IM Bild (z. B. Logo auf dem Polo-Shirt!), Plattform-UI-Zonen.
+- Vor dem Render 3 Frames (Anfang/Mitte/Ende) prüfen: kollidiert die Textzone mit einem dieser
+  Elemente, Position innerhalb der erlaubten Zone anpassen — einmal, für das ganze Video.
+- Hook-Overlays: siehe `hooks.md` — gleiche Typografie wie die Untertitel, eigene Positionsregeln.
+
+## Vollständigkeits-Regel (Pflicht)
+
+Die Emphasis-Unterdrückung („Wörter im Emphasis-Fenster bekommen keine Karaoke-Zeile“)
+arbeitet auf WORT-Ebene, nie auf Karten-Ebene — sonst verschwinden ganze Halbsätze aus den
+Untertiteln. Abschluss-Check vor Lieferung: jedes gesprochene Wort des Transkripts erscheint entweder
+in einer Karaoke-Karte oder in einem Emphasis-Overlay. Fehlende Wörter = nicht liefern.
