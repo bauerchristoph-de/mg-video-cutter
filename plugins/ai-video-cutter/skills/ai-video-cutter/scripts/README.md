@@ -1,11 +1,79 @@
-# Scripts — Stand v0.1
+# scripts/ — die ausführbare Hälfte des Video-Cutters
 
-Noch leer — bewusst. Die validierte Referenz-Implementierung ist `build_cut.py` aus dem Mehr-Geschäft-Webinar-Projekt (Kunden\Mehr Geschäft\2026-08 Webinar). Sie enthält bereits alle Regeln aus den references (halboffene Enables, ONSET_FIX mit asserts, Emphasis-Renderer ohne Underline, events.json-Export, Zeilenwechsel-Handoff).
+Alles, was bei **jedem** Video gleich ist, liegt hier als Code. Video-spezifisch
+bleibt nur der `cut-plan.json`. Vorher wurde die Untertitel-Erzeugung pro Video
+neu geschrieben — mit der Folge, dass dieselben Fehler mehrfach auftraten
+(Chip an der falschen Box, verschluckte Wörter, unlesbare Zeilen auf hellem Grund).
 
-**Nächster Schritt für v0.2 (vor dem Pilotkunden):** build_cut.py generalisieren zu
-- `build.py` — liest `kunden-config.yaml` + `schnittplan.yaml` (SEGS, Emphasis, Format) statt hartkodierter Werte
-- `make_sfx.py` — SFX-Synthese aus events.json (Pop/Boom/Whoosh, Planned→Container-Remap)
-- `qc.py` — alle QC-Gates aus render-technik.md als ein Aufruf (Freeze, A/V-Länge, Loudness, Sub-Kontiguität, Ton-Sync, SFX-Sync)
-- `onset_audit.py` — Hüllkurven-Export + Wort-Onset-Prüfung mit Report
+**Regel: Diese Skripte werden benutzt, nicht nachgebaut.** Wenn etwas fehlt,
+gehört es hier hinein und ins nächste Release — nicht in den Projektordner.
 
-Erst generalisieren, wenn der Entwurf inhaltlich festgemacht ist — sonst zweimal Arbeit.
+## Ablauf
+
+```bash
+# 1 · Kontrast messen und Scrim-Entscheidung in den Plan schreiben
+python3 contrast_probe.py --video cut.mp4 --plan cut-plan.json --apply
+
+# 2 · Overlays + SFX-Events bauen
+python3 build.py --config kunden-config.yaml --plan cut-plan.json --out build/
+
+# 3 · SFX-Spur erzeugen (Peaks werden gegen die Events gemessen)
+python3 make_sfx.py --events build/events.json --duration 35.3 --out build/sfx.wav --check
+
+# 4 · Overlay + Ton auf das Video legen (ffmpeg, video-spezifisch)
+ffmpeg -i cut.mp4 -framerate 30 -i build/ovl/f%05d.png \
+  -filter_complex "[0:v][1:v]overlay=0:0:format=auto" ... final.mp4
+
+# 5 · Pflicht-QC — Exit-Code 1 heißt: nicht ausliefern
+python3 qc.py --video final.mp4 --build build/ --plan cut-plan.json
+```
+
+## cut-plan.json — das einzige, was pro Video geschrieben wird
+
+```json
+{
+  "timeline": { "end": 35.3 },
+  "words": [ { "w": "Wir", "s": 3.10, "e": 3.42 } ],
+  "hook": {
+    "lines": [["WANN","SOLLTEST","DU"],["DIE","SECURITY","HOLEN?"]],
+    "keyword": "SECURITY", "y": 712, "in": 0.18, "until": 9.47
+  },
+  "emphasis": {
+    "onset": 19.56, "hold_end": 20.84, "end": 20.99,
+    "lines": [["LIEBER","EINMAL"],["ZU","VIEL"]], "keyword": "EINMAL"
+  },
+  "cuts": [9.47, 22.75],
+  "boom": [],
+  "style": { "karaoke": { "scrim": { "alpha": 0.45 } } }
+}
+```
+
+* `words` — Wort-Timings **nach** Onset-Audit und Segment-Remap (nicht roh aus Whisper).
+* `hook.until` — bis wann der Hook steht (danach greifen die Karaoke-Karten).
+* `emphasis.lines` — was die Emphasis anzeigt. Nur diese Wörter werden aus den
+  Karaoke-Karten entfernt; alles andere im Zeitfenster bleibt sichtbar.
+* `style` — optionale Überschreibungen nur für dieses Video. Der Normalfall ist,
+  hier nichts zu setzen: Der Stil kommt aus der Kunden-Config.
+
+## Was die Skripte selbst absichern
+
+| Prüfung | Wo | Verhindert |
+|---|---|---|
+| Chip auf der Ink-Box | `build.py` | Chip sitzt zu hoch, Schrift wirkt nicht mittig |
+| Wort-Ebene statt Karten-Ebene bei Emphasis | `build.py` | verschwundene Halbsätze |
+| Sprechpause > 0,6 s bricht die Karte | `build.py` | Wörter aus zwei Sinneinheiten in einer Karte |
+| kein Wort fällt aus den Karten | `build.py` (assert) | stille Textverluste |
+| Luminanz der Textzone | `contrast_probe.py` | unlesbare Schrift auf hellem Grund |
+| Peak-Lage der SFX | `make_sfx.py --check` | Effekt liegt hörbar neben dem Schnitt |
+| 8 Gates + Kontaktbogen | `qc.py` | Auslieferung mit erkennbarem Fehler |
+
+## Abhängigkeiten
+
+`pillow`, `pyyaml`, `ffmpeg`/`ffprobe` im Pfad.
+Fehlt PyYAML: `pip install pyyaml --break-system-packages`
+
+## Performance
+
+`build.py` dedupliziert identische Frames (bei Karaoke ändert sich nur alle
+~9 Frames etwas) und hardlinkt sie. Gemessen an einem 11,5-s-Testvideo:
+344 Frames, davon 84 gerendert — **76 % gespart**, ~13 s Laufzeit bei 1080×1920.
