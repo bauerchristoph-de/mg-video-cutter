@@ -56,8 +56,18 @@ Audio extrahieren, mit Whisper transkribieren (`word_timestamps=True`, Modell me
 ### 3 · Schnittplan (Freigabe-Dokument)
 Als Tabelle: Segment | Quellzeit in/out | Zoomstufe | Untertitel-Modus (karaoke/emphasis) | SFX. Dazu in 3 Sätzen: dramaturgische Idee (Hook → Kernaussagen → CTA), welche Stellen Emphasis bekommen und warum. **Erst nach Freigabe bauen.**
 
-### 4 · Build
-Generator-Skript erzeugt alle Assets (Untertitel-PNGs, Emphasis-Sequenzen, SFX-Spur) und ein resumables Render-Skript. Architektur und Pflicht-Prüfungen in `references/render-technik.md` — die dort beschriebenen QC-Gates sind nicht optional, jede einzelne Prüfung hat schon reale Fehler gefangen.
+### 4 · Build — mit den mitgelieferten Skripten, nie nachgebaut
+Die Skripte in `scripts/` sind die ausführbare Hälfte dieses Skills. Sie werden benutzt, nicht neu geschrieben — jede Eigenbau-Pipeline hat bisher dieselben Fehler reproduziert (Chip an der Ascender- statt Ink-Box, verschluckte Wörter, unlesbare Zeilen).
+
+```bash
+python3 scripts/contrast_probe.py --video cut.mp4 --plan cut-plan.json --apply
+python3 scripts/build.py --config kunden-config.yaml --plan cut-plan.json --out build/
+python3 scripts/make_sfx.py --events build/events.json --duration <sek> --out build/sfx.wav --check
+# ffmpeg-Overlay + Master (video-spezifisch, Rezepte in references/render-technik.md)
+python3 scripts/qc.py --video final.mp4 --build build/ --plan cut-plan.json
+```
+
+Pro Video wird ausschließlich `cut-plan.json` geschrieben (Aufbau: `scripts/README.md`, Vorlage: `scripts/cut-plan.example.json`). Fehlt eine Fähigkeit im Skript, gehört sie ins nächste Release — nicht in den Projektordner. Architektur und Render-Rezepte: `references/render-technik.md`.
 
 ### 5 · QC vor Lieferung (hartes Gate)
 - Freeze-Scan (`freezedetect`) = 0 Treffer
@@ -68,7 +78,9 @@ Generator-Skript erzeugt alle Assets (Untertitel-PNGs, Emphasis-Sequenzen, SFX-S
 - **Kollisions-Check:** Untertitel/Hook liegen nicht über Gesicht, Händen, Logos oder Schrift im Bild
 - **Vollständigkeits-Gate:** jedes Transkript-Wort erscheint in Karaoke oder Emphasis — kein Wort fehlt
 - Onset-Stichprobe: 3–5 Wörter nach Sprechpausen gegen die RMS-Hüllkurve
-- SFX-Events gegen Animations-Onsets abgeglichen (maschinell, nicht nach Gehör); SFX-Peaks gemessen, nicht Dateienden
+- SFX-Events gegen Animations-Onsets abgeglichen (maschinell, nicht nach Gehör); SFX-Peaks gemessen, nicht Dateienden (`make_sfx.py --check`)
+
+`scripts/qc.py` prüft diese Gates automatisch und beendet sich mit Fehlercode, wenn eines reißt. **Den erzeugten Kontaktbogen `qc-frames.jpg` trotzdem immer ansehen** — Zahlen erkennen nicht, dass helle Schrift auf einem weißen Hemd liegt.
 
 ### 6 · Lieferung
 Master in voller Qualität in den Ordner `fertig/` + kleine Preview (480p) in den Chat. Bei Feedback: Version hochzählen, nie überschreiben.
