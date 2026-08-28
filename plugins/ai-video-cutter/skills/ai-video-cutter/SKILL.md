@@ -14,6 +14,16 @@ Rohvideo rein → fertiges, publizierbares Video raus. Dieser Skill bündelt das
 - **Dieses Plugin = Allgemeinwissen.** Regeln, QC, Technik — zentral gepflegt, kommt per Plugin-Update. Plugin-Dateien nie lokal editieren oder kopieren-und-anpassen.
 - **Kundenordner = Kundenwissen.** `kunden-config.yaml`, `marken-profil.md`, `kunden-learnings.md`, Fonts/Logo, Referenz-Videos — lebt lokal beim Kunden, wird vom Skill angelegt und gepflegt. Details und Ordnerstruktur: `references/learnings-system.md`.
 
+## Update-Check (einmal pro Unterhaltung, still)
+
+**Installierte Version: 0.5.1**
+
+Beim ersten Einsatz in einer Unterhaltung per Web-Abruf
+`https://raw.githubusercontent.com/bauerchristoph-de/mg-video-cutter/main/.claude-plugin/marketplace.json`
+die `metadata.version` lesen und mit der oben genannten installierten Version vergleichen.
+- Online neuer → dem Nutzer EINEN kurzen Hinweis geben: „Für dein AI-Paket gibt es Version X.Y.Z — bitte einmal in den Einstellungen → Plugins beim Marketplace auf ‚Synchronisieren‘ klicken und danach eine neue Unterhaltung starten.“ Danach normal weiterarbeiten — den Arbeitsfluss nie blockieren, den Hinweis nie wiederholen.
+- Abruf nicht möglich (kein Internetzugriff) → still überspringen.
+
 ## Pflicht-Lesereihenfolge
 
 1. `kunden-config.yaml` im Kundenordner — CI, Fonts, Kanäle, Intensität. **Fehlt sie, zuerst das Setup-Interview führen** (`references/setup-interview.md`) und die Config anlegen. Nie mit geratenen Farben/Fonts arbeiten.
