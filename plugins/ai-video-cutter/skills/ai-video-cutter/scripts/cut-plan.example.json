@@ -1,0 +1,45 @@
+{
+ "_hinweis": "Beispiel. words = Wort-Timings NACH Onset-Audit und Segment-Remap, nicht roh aus Whisper. Aufbau und Regeln: README.md",
+ "timeline": { "end": 11.48 },
+ "words": [
+  { "w": "Wir", "s": 3.0, "e": 3.32 },
+  { "w": "wissen", "s": 3.34, "e": 3.66 },
+  { "w": "nicht", "s": 3.68, "e": 4.0 },
+  { "w": "genau", "s": 4.02, "e": 4.34 },
+  { "w": "wann", "s": 4.36, "e": 4.68 },
+  { "w": "der", "s": 4.7, "e": 5.02 },
+  { "w": "richtige", "s": 5.04, "e": 5.36 },
+  { "w": "Zeitpunkt", "s": 5.38, "e": 5.7 },
+  { "w": "ist", "s": 5.72, "e": 6.04 },
+  { "w": "aber", "s": 6.06, "e": 6.38 },
+  { "w": "ich", "s": 6.4, "e": 6.72 },
+  { "w": "sage", "s": 6.74, "e": 7.06 },
+  { "w": "immer", "s": 7.08, "e": 7.4 },
+  { "w": "lieber", "s": 7.42, "e": 7.74 },
+  { "w": "einmal", "s": 7.76, "e": 8.08 },
+  { "w": "zu", "s": 8.1, "e": 8.42 },
+  { "w": "viel", "s": 8.44, "e": 8.76 },
+  { "w": "Bescheid", "s": 8.78, "e": 9.1 },
+  { "w": "sagen", "s": 9.12, "e": 9.44 },
+  { "w": "als", "s": 9.46, "e": 9.78 },
+  { "w": "gar", "s": 9.8, "e": 10.12 },
+  { "w": "nicht", "s": 10.14, "e": 10.46 }
+ ],
+ "hook": {
+  "lines": [["WANN", "SOLLTEST", "DU"], ["DIE", "SECURITY", "HOLEN?"]],
+  "keyword": "SECURITY",
+  "y": 712,
+  "in": 0.18,
+  "until": 2.8
+ },
+ "emphasis": {
+  "onset": 7.3,
+  "hold_end": 8.76,
+  "end": 8.91,
+  "lines": [["LIEBER", "EINMAL"], ["ZU", "VIEL"]],
+  "keyword": "EINMAL"
+ },
+ "cuts": [2.8],
+ "boom": [],
+ "style": { "karaoke": { "scrim": { "alpha": 0.0 } } }
+}
