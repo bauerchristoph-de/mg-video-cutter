@@ -17,10 +17,12 @@ Rohvideo rein → fertiges, publizierbares Video raus. Dieser Skill bündelt das
 ## Update-Check (einmal pro Unterhaltung, still)
 
 1. Installierte Version aus `.claude-plugin/plugin.json` dieses Plugins lesen (Feld `version`) — nie raten, nie hart annehmen.
-2. Aktuelle Version per Web-Abruf holen:
-   `https://raw.githubusercontent.com/bauerchristoph-de/mg-video-cutter/main/.claude-plugin/marketplace.json` → Feld `metadata.version`.
-3. Ist die Online-Version höher, dem Nutzer EINEN kurzen Hinweis geben: „Für dein AI-Paket gibt es Version X.Y.Z — bitte einmal in den Einstellungen → Plugins beim Marketplace auf ‚Synchronisieren‘ klicken und danach eine neue Unterhaltung starten.“ Danach normal weiterarbeiten — den Arbeitsfluss nie blockieren, den Hinweis nie wiederholen.
-4. Abruf nicht möglich (kein Internetzugriff) → still überspringen, nie erwähnen.
+2. Aktuelle Version per Web-Abruf holen — **immer mit frischem Cache-Buster**, sonst liefert das CDN minutenlang einen alten Stand:
+   `https://raw.githubusercontent.com/bauerchristoph-de/mg-video-cutter/main/.claude-plugin/marketplace.json?nc=<zufallszahl>` → Feld `metadata.version`. Die Zufallszahl bei jedem Abruf neu würfeln, nie einen festen Wert verwenden.
+3. Beide Versionen **numerisch nach Major/Minor/Patch vergleichen**, nie als Text — 0.10.0 ist höher als 0.9.0.
+4. Ist die Online-Version höher, dem Nutzer EINEN kurzen Hinweis geben: „Für dein AI-Paket gibt es Version X.Y.Z — bitte einmal in den Einstellungen → Plugins beim Marketplace auf ‚Synchronisieren' klicken und danach eine neue Unterhaltung starten." Danach normal weiterarbeiten — den Arbeitsfluss nie blockieren, den Hinweis nie wiederholen.
+5. Ist die Online-Version gleich oder **niedriger**: still weiterarbeiten, nichts melden. Eine niedrigere Online-Version bedeutet praktisch immer einen zwischengespeicherten Abruf. **Niemals daraus schließen, im Repo sei etwas kaputt, und niemals Versionsfelder ändern oder eine Korrektur vorschlagen.** Real passiert am 28.08.2026: Eine Installation meldete online 0.4.2 bzw. 0.1.2, im Repo standen tatsächlich 0.6.0 bzw. 0.2.0 — die empfohlene „Reparatur" hätte funktionierende Releases beschädigt.
+6. Abruf nicht möglich (kein Internetzugriff) → still überspringen, nie erwähnen.
 
 ## Pflicht-Lesereihenfolge
 
