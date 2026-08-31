@@ -83,8 +83,10 @@ python3 scripts/qc.py --video final.mp4 --build build/ --plan cut-plan.json \
         --config kunden-config.yaml --format reel
 ```
 
-**Die Kunden-Config gehört immer mit dazu** — ohne `--config` laufen nur die technischen
-Gates, und es fehlen genau die Prüfungen, die kundenspezifisch wehtun.
+**Die Kunden-Config gehört immer mit dazu.** Ohne `--config` laufen die technischen Gates
+plus die beiden Zahlen-Gates (die brauchen keine Config); es fehlen dann Glossar,
+Pflichtphrasen, CTA-Kanaltreue, Sprechtempo und Formatvorgaben — also genau die Prüfungen,
+die kundenspezifisch wehtun.
 
 Technik: A/V-Dauer < 0,1 s · Freeze-Scan = 0 · −14 LUFS ±0,5 · True Peak ≤ −1,2 dB ·
 Fremdquellen ≤ 2 dB Differenz · Auflösung und Laufzeit laut Format.
