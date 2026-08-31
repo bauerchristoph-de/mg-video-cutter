@@ -20,6 +20,79 @@ import json, subprocess, argparse, re, os, sys, math
 
 GATES = []
 
+NUM_RE = re.compile(r"\d[\d.,]*")
+
+
+def load_config(path):
+    """kunden-config.yaml laden. Fehlt PyYAML, wird laut abgebrochen statt still
+    weiterzulaufen — ein uebersprungenes Gate ist schlimmer als ein Fehler."""
+    if not path:
+        return {}
+    assert os.path.exists(path), f"Config nicht gefunden: {path}"
+    try:
+        import yaml
+    except ImportError:
+        sys.exit("PyYAML fehlt (pip install pyyaml) — Inhalts-Gates koennen nicht laufen.")
+    return yaml.safe_load(open(path, encoding="utf-8")) or {}
+
+
+def to_num(tok):
+    """'2.046' -> 2046.0 · '0,25' -> 0.25 · sonst None."""
+    t = tok.strip().strip(".,!?;:()")
+    if not re.fullmatch(r"\d{1,3}(\.\d{3})+(,\d+)?|\d+(,\d+)?", t):
+        return None
+    try:
+        return float(t.replace(".", "").replace(",", "."))
+    except ValueError:
+        return None
+
+
+def numbers_in(text):
+    """Alle Zahlwerte eines Textes, in Reihenfolge, mit Token-Index."""
+    out = []
+    for i, tok in enumerate(text.split()):
+        m = NUM_RE.search(tok)
+        if m:
+            v = to_num(m.group())
+            if v is not None:
+                out.append((i, v))
+    return out
+
+
+def rechen_pruefung(text, window=45, tol=0.02):
+    """Prueft Prozentrechnungen im Text: Basis x Prozent / 100 == Ergebnis.
+
+    Whisper vertippt sich bei Betraegen HOCHKONFIDENT (gemessen: falsche Zahlen mit
+    p=0,94 bis 0,98) — die Konfidenz taugt deshalb NICHT als Detektor. Die Arithmetik
+    schon: 2046 x 40 % = 818, gesagt wurde 1056 — also war die Basis 2640.
+
+    Nur wo neben der Prozentangabe ueberhaupt zwei Zahlen stehen, wird geprueft;
+    rhetorische Prozente ('zu 100 Prozent') haben keine Rechnung und werden
+    uebersprungen.
+    """
+    toks = text.split()
+    nums = numbers_in(text)
+    treffer = []
+    for pi, p in nums:
+        umfeld = " ".join(toks[pi:pi + 2]).lower()
+        ist_prozent = "%" in toks[pi] or umfeld.startswith(toks[pi].lower() + " prozent") \
+            or "prozent" in umfeld
+        if not ist_prozent or not (0 < p <= 100):
+            continue
+        cand = [(i, v) for i, v in nums if abs(i - pi) <= window and v != p and v > 0]
+        if len({v for _, v in cand}) < 2:
+            continue                      # keine Rechnung im Umfeld -> nichts zu pruefen
+        stimmig = None
+        for i, basis in cand:
+            for j, ergebnis in cand:
+                if j <= i or basis <= ergebnis:
+                    continue
+                if abs(basis * p / 100 - ergebnis) <= max(1.0, tol * ergebnis):
+                    stimmig = (basis, p, ergebnis)
+        treffer.append({"prozent": p, "stimmig": stimmig,
+                        "zahlen": sorted({v for _, v in cand})[:10]})
+    return treffer
+
 
 def sh(cmd, timeout=180):
     return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
@@ -43,6 +116,9 @@ def main():
     ap.add_argument("--build", required=True, help="Ordner mit build-report.json / events.json")
     ap.add_argument("--plan", help="cut-plan.json (für Wort-Vollständigkeit)")
     ap.add_argument("--target-lufs", type=float, default=-14.0)
+    ap.add_argument("--config", help="kunden-config.yaml — schaltet die Inhalts-Gates frei")
+    ap.add_argument("--transcript", help="Whisper-JSON (fuer Sprechtempo)")
+    ap.add_argument("--format", choices=["reel", "longform"], help="Zielformat (CTA-Kanaltreue)")
     a = ap.parse_args()
 
     assert os.path.exists(a.video), f"Video nicht gefunden: {a.video}"
@@ -55,23 +131,28 @@ def main():
     lh = br["style_used"]["karaoke"]["line_height"]
     scrim_alpha = br["style_used"]["karaoke"].get("scrim", {}).get("alpha", 0)
 
+    cfg = load_config(a.config)
+    emph_lines = (br.get("emphasis") or {}).get("lines", [])
+    shown_text = " ".join([c["txt"] for c in cards] +
+                          [" ".join(l) for l in emph_lines])
+
     print(f"\nQC · {os.path.basename(a.video)}")
     print("-" * 60)
 
-    # 1 ---------------------------------------------------- Streamdauern
+    # 1 --------------------------------------------------- Streamdauern
     v = probe(a.video, "stream=duration")["streams"][0]
     aud = probe(a.video, "stream=duration", "a:0")
     vd = float(v.get("duration", 0))
     ad = float(aud["streams"][0]["duration"]) if aud.get("streams") else 0.0
     gate("A/V-Dauer", abs(vd - ad) < 0.1, f"Video {vd:.3f}s · Audio {ad:.3f}s · Δ {abs(vd-ad):.3f}s")
 
-    # 2 ---------------------------------------------------- Freeze-Scan
+    # 2 --------------------------------------------------- Freeze-Scan
     r = sh(["ffmpeg", "-v", "info", "-i", a.video, "-vf", "freezedetect=n=-60dB:d=0.5",
             "-map", "0:v:0", "-f", "null", "-"])
     freezes = len(re.findall(r"freeze_start", r.stderr))
     gate("Freeze-Scan", freezes == 0, f"{freezes} Treffer")
 
-    # 3 ---------------------------------------------------- Loudness / True Peak
+    # 3 --------------------------------------------------- Loudness / True Peak
     r = sh(["ffmpeg", "-v", "info", "-i", a.video, "-af", "ebur128=peak=true",
             "-f", "null", "-"])
     tail = r.stderr[-2500:]
@@ -85,7 +166,7 @@ def main():
     if peak is not None:
         gate("True Peak", peak <= -1.2, f"{peak:.2f} dBTP (Grenze −1,2)")
 
-    # 4 ---------------------------------------------------- Karten-Kontinuität
+    # 4 --------------------------------------------------- Karten-Kontinuität
     micro = [(cards[i]["e"], cards[i + 1]["s"]) for i in range(len(cards) - 1)
              if 0 < cards[i + 1]["s"] - cards[i]["e"] < 0.2]
     over = [(cards[i]["e"], cards[i + 1]["s"]) for i in range(len(cards) - 1)
@@ -93,17 +174,16 @@ def main():
     gate("Karten-Kontinuität", not micro and not over,
          f"{len(micro)} Mikro-Lücken · {len(over)} Überlappungen")
 
-    # 5 ---------------------------------------------------- Vollständigkeit
+    # 5 --------------------------------------------------- Vollständigkeit
     if a.plan and os.path.exists(a.plan):
         plan = json.load(open(a.plan, encoding="utf-8"))
         spoken = [w["w"].strip(".,?!").lower() for w in plan.get("words", [])]
-        shown = " ".join(c["txt"] for c in cards).lower()
-        emph_txt = " ".join(" ".join(l) for l in (br.get("emphasis") or {}).get("lines", [])).lower()
-        missing = [w for w in spoken if w and w not in shown and w not in emph_txt]
+        low = shown_text.lower()
+        missing = [w for w in spoken if w and w not in low]
         gate("Vollständigkeit", not missing,
              "alle Wörter sichtbar" if not missing else f"{len(missing)} fehlen: {missing[:8]}")
 
-    # 6 ---------------------------------------------------- Lesbarkeit (Kontrast)
+    # 6 --------------------------------------------------- Lesbarkeit (Kontrast)
     # Gemessen wird die Helligkeit der Textzone im FERTIGEN Bild. Liegt helle
     # Schrift auf hellem Grund, ist der Streifen durchgehend hell und flau.
     probes, bright = [], 0
@@ -126,14 +206,89 @@ def main():
              f"Textzone Ø {avg:.0f} · {bright}/{len(probes)} hell" +
              (f" · Scrim aktiv ({scrim_alpha})" if scrim_alpha else " · KEIN Scrim"))
 
-    # 7 ---------------------------------------------------- SFX-Peaks
+    # 7 --------------------------------------------------- SFX-Peaks
     ev_path = os.path.join(a.build, "events.json")
     if os.path.exists(ev_path):
         ev = json.load(open(ev_path, encoding="utf-8"))
         n_ev = sum(len(v) for v in ev.values())
         gate("SFX-Events", True, f"{n_ev} Events geplant (Peak-Abgleich in make_sfx.py --check)")
 
-    # 8 ---------------------------------------------------- Kontaktbogen
+    # 8 --------------------------------------------------- Glossar
+    # Bekannte Transkriptionsfehler des Kunden duerfen im Endtext nicht stehen.
+    glossar = (cfg.get("glossar") or {})
+    fehlerpaare = list(glossar.get("fachbegriffe") or []) + list(glossar.get("phrasen") or [])
+    if fehlerpaare:
+        low = shown_text.lower()
+        drin = [falsch for falsch, _ in fehlerpaare if falsch.lower() in low]
+        gate("Glossar", not drin,
+             "keine bekannten Fehler" if not drin else f"{len(drin)} unkorrigiert: {drin[:5]}")
+
+    # 9 --------------------------------------------------- Zahlen: Rechenpruefung
+    # Die Zahl ist bei zahlengetriebenen Kunden die Kernbotschaft. Whisper vertippt
+    # sich dabei HOCHKONFIDENT — nur die Arithmetik deckt das auf.
+    if cfg.get("qc_zahlen", True) and cards:
+        treffer = rechen_pruefung(shown_text)
+        unstimmig = [t for t in treffer if not t["stimmig"]]
+        gate("Zahlen-Rechenpruefung", not unstimmig,
+             f"{len(treffer)} Prozentrechnung(en) geprueft" if not unstimmig
+             else f"{len(unstimmig)} nicht nachvollziehbar: " +
+                  "; ".join(f"{t['prozent']:g}% mit {t['zahlen']}" for t in unstimmig[:3]))
+
+    # 10 -------------------------------------------------- Zahlen: Deckung
+    # Jede angezeigte Zahl muss auch gesprochen worden sein (faengt Tippfehler
+    # im Untertitel, die die Rechenpruefung nicht sieht).
+    if a.plan and os.path.exists(a.plan):
+        gesprochen = {v for _, v in numbers_in(
+            " ".join(w["w"] for w in json.load(open(a.plan, encoding="utf-8")).get("words", [])))}
+        erfunden = sorted({v for _, v in numbers_in(shown_text)} - gesprochen)
+        gate("Zahlen-Deckung", not erfunden,
+             "alle angezeigten Zahlen gesprochen" if not erfunden
+             else f"{len(erfunden)} nicht im Transkript: {erfunden[:6]}")
+
+    # 11 -------------------------------------------------- Pflichtphrasen
+    # Rechtliche/berufsrechtliche Weichmacher ("in der Regel", "meine Erfahrung")
+    # duerfen beim Kuerzen nicht wegfallen — sonst aendert sich das Aussage-Niveau.
+    pflicht = cfg.get("pflicht_phrasen") or []
+    if pflicht:
+        low = shown_text.lower()
+        fehlen = [p for p in pflicht if p.lower() not in low]
+        gate("Pflichtphrasen", not fehlen,
+             "alle vorhanden" if not fehlen else f"fehlen: {fehlen[:4]}")
+
+    # 12 -------------------------------------------------- Sprechtempo
+    prof = cfg.get("sprechprofil") or {}
+    ziel = prof.get(f"wpm_{a.format}") if a.format else None
+    if ziel and vd > 0:
+        wpm = len(shown_text.split()) / vd * 60
+        tol = prof.get("wpm_toleranz", 25)
+        gate("Sprechtempo", abs(wpm - ziel) <= tol,
+             f"{wpm:.0f} WPM (Profil {ziel} ±{tol})")
+
+    # 13 -------------------------------------------------- CTA-Kanaltreue
+    # Longform traegt den CTA-Block, Reels enden nach dem Abbinder. Nie vertauschen.
+    cta = cfg.get("cta_marker") or []
+    if cta and a.format:
+        low = shown_text.lower()
+        hat = any(m.lower() in low for m in cta)
+        soll = bool(((cfg.get("formate") or {}).get(a.format) or {}).get("hat_cta_block"))
+        gate("CTA-Kanaltreue", hat == soll,
+             f"{a.format}: CTA {'vorhanden' if hat else 'fehlt'}, erwartet "
+             f"{'vorhanden' if soll else 'keiner'}")
+
+    # 14 -------------------------------------------------- Formatvorgaben
+    fmt = ((cfg.get("formate") or {}).get(a.format) or {}) if a.format else {}
+    if fmt:
+        vs = probe(a.video, "stream=width,height")["streams"][0]
+        soll_res = fmt.get("aufloesung")
+        if soll_res:
+            gate("Aufloesung", [vs["width"], vs["height"]] == list(soll_res),
+                 f"{vs['width']}x{vs['height']} (Soll {soll_res[0]}x{soll_res[1]})")
+        spanne = fmt.get("ziel_dauer_s")
+        if spanne:
+            gate("Laufzeit", spanne[0] <= vd <= spanne[1],
+                 f"{vd:.1f}s (Ziel {spanne[0]}–{spanne[1]}s)")
+
+    # 15 -------------------------------------------------- Kontaktbogen
     strip = os.path.join(a.build, "qc-frames.jpg")
     picks = cards[::max(1, len(cards) // 6)][:6]
     if picks:
