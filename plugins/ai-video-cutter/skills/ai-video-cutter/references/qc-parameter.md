@@ -12,8 +12,9 @@ python3 scripts/qc.py --video final.mp4 --build build/ --plan cut-plan.json \
         --config kunden-config.yaml --format reel
 ```
 
-Ohne `--config` laufen nur die technischen Gates. **Die Config gehört immer mit dazu** —
-sonst fehlen genau die Prüfungen, die kundenspezifisch wehtun.
+Ohne `--config` laufen die technischen Gates plus die beiden Zahlen-Gates — die brauchen
+keine Config. Es fehlen dann Glossar, Pflichtphrasen, CTA-Kanaltreue, Sprechtempo und
+Formatvorgaben. **Die Config gehört immer mit dazu.**
 
 ---
 
@@ -81,6 +82,33 @@ Zwei korrekte Rechnungen wurden als stimmig bestätigt, vier Videos ohne Rechnun
 Damit rhetorische Prozentangaben („zu 100 Prozent zufrieden") nicht anschlagen, prüft das
 Gate nur dort, wo neben der Prozentangabe **mindestens zwei verschiedene Zahlen** stehen —
 also eine Rechnung überhaupt vorhanden sein kann.
+
+### Drei Rechenformen, nicht eine
+
+Die erste Fassung prüfte nur den Anteil (`Basis × p/100`). Die Negativkontrolle am
+31.08.2026 zeigte, dass das bei jedem Zuschlag und jeder Steigerung falsch anschlägt:
+
+| Satz | erste Fassung |
+|---|---|
+| „25 % Zuschlag auf 32 Euro, also 40 Euro" | **Fehlalarm** (32 × 1,25 = 40) |
+| „stieg um 30 %, von 120 auf 156" | **Fehlalarm** (120 × 1,3 = 156) |
+
+Ein Gate, das bei einem Sicherheitsdienst jeden Nachtzuschlag anschlägt, wird nach dem
+zweiten Video abgeschaltet. Deshalb gelten drei Formen als stimmig:
+
+```
+Anteil     Basis × p/100          „40 % von 3000 sind 1200"
+Aufschlag  Basis × (1 + p/100)    „25 % Zuschlag auf 32 Euro, also 40 Euro"
+Abschlag   Basis × (1 − p/100)    „30 % Rabatt auf 200 Euro, also 140 Euro"
+```
+
+Dazu eine Sperre gegen Scheintreffer: Basis und Ergebnis müssen sich messbar
+unterscheiden. Ohne sie wäre bei kleinen Prozentsätzen `x ≈ x × (1 + p/100)` trivial
+„stimmig" — real aufgetreten bei „0,24 Prozent … bis 230 … bis 230", wo das Gate dadurch
+einen echten Fehler übersah.
+
+**Nachgemessen nach der Korrektur: 0 Fehlalarme in 9 Kontrollsätzen aus drei Branchen,
+0 Abweichungen bei den 10 echten Videos.**
 
 ---
 
