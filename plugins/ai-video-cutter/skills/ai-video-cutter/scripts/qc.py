@@ -60,15 +60,22 @@ def numbers_in(text):
 
 
 def rechen_pruefung(text, window=45, tol=0.02):
-    """Prueft Prozentrechnungen im Text: Basis x Prozent / 100 == Ergebnis.
+    """Prueft Prozentrechnungen im Text auf Stimmigkeit.
 
-    Whisper vertippt sich bei Betraegen HOCHKONFIDENT (gemessen: falsche Zahlen mit
-    p=0,94 bis 0,98) — die Konfidenz taugt deshalb NICHT als Detektor. Die Arithmetik
-    schon: 2046 x 40 % = 818, gesagt wurde 1056 — also war die Basis 2640.
+    Whisper vertippt sich bei Betraegen HOCHKONFIDENT (gemessen an 117 Zahl-Tokens:
+    falsche Zahlen mit p=0,94 bis 0,98) — die Konfidenz taugt deshalb NICHT als
+    Detektor. Die Arithmetik schon: 2046 x 40 % = 818, gesagt wurde 1056 — also war
+    die Basis 2640.
 
-    Nur wo neben der Prozentangabe ueberhaupt zwei Zahlen stehen, wird geprueft;
-    rhetorische Prozente ('zu 100 Prozent') haben keine Rechnung und werden
-    uebersprungen.
+    Drei Rechenformen gelten als stimmig, weil alle drei in echter Sprache vorkommen:
+      Anteil:     Basis x p/100        ("40 % von 3000 sind 1200")
+      Aufschlag:  Basis x (1 + p/100)  ("25 % Zuschlag auf 32 Euro, also 40 Euro")
+      Abschlag:   Basis x (1 - p/100)  ("30 % Rabatt auf 200 Euro, also 140 Euro")
+    Nur die Anteilsform zu pruefen erzeugt Fehlalarme bei jedem Zuschlag und jeder
+    Steigerung — nachgewiesen am 31.08.2026 in der Negativkontrolle.
+
+    Geprueft wird nur, wo neben der Prozentangabe mindestens zwei VERSCHIEDENE Zahlen
+    stehen; rhetorische Prozente ('zu 100 Prozent') haben keine Rechnung.
     """
     toks = text.split()
     nums = numbers_in(text)
@@ -85,10 +92,14 @@ def rechen_pruefung(text, window=45, tol=0.02):
         stimmig = None
         for i, basis in cand:
             for j, ergebnis in cand:
-                if j <= i or basis <= ergebnis:
+                if j <= i:                # Basis wird vor dem Ergebnis genannt
                     continue
-                if abs(basis * p / 100 - ergebnis) <= max(1.0, tol * ergebnis):
-                    stimmig = (basis, p, ergebnis)
+                if abs(basis - ergebnis) <= max(1.0, tol * ergebnis):
+                    continue              # Basis == Ergebnis: bei kleinen Prozentsaetzen
+                                          # waere x ~ x*(1+p/100) trivial "stimmig"
+                for faktor in (p / 100, 1 + p / 100, 1 - p / 100):
+                    if abs(basis * faktor - ergebnis) <= max(1.0, tol * ergebnis):
+                        stimmig = (basis, p, ergebnis)
         treffer.append({"prozent": p, "stimmig": stimmig,
                         "zahlen": sorted({v for _, v in cand})[:10]})
     return treffer
