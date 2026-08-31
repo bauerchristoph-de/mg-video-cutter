@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "AI Video-Cutter — Rohvideo rein, fertiges Social-Media-Video raus. Zentral gepflegt, Updates erreichen alle Kunden automatisch.",
-    "version": "0.7.0"
+    "version": "0.7.1"
   },
   "plugins": [
     {
