@@ -63,3 +63,65 @@ Analysierte Quellen: <URLs, Accounts mit Post-Anzahl, N Videos>
 - Das Profil ist ein lebendes Dokument: Wording-Feedback aus Feedbackrunden wird hier nachgeschärft (nicht nur in kunden-learnings.md — das Profil ist die Quelle, die Learnings sind das Protokoll).
 - Bei Rebranding, neuem Account oder spürbarer Stil-Änderung: Analyse auf Zuruf neu laufen lassen (alte Fassung datiert archivieren).
 - `wording_notizen` in der kunden-config.yaml bleibt die Kurzfassung fürs schnelle Nachschlagen; bei Widerspruch gilt das Markenprofil.
+
+---
+
+## Was die Marken-Analyse für die QC liefern muss
+
+Die Analyse ist nicht nur Stilkunde — sie füllt die Felder, aus denen die Inhalts-Gates
+gespeist werden (`references/qc-parameter.md`). Vier Dinge kommen aus keiner anderen Quelle:
+
+**1 · Das Glossar der Transkriptionsfehler.** Beim Durchhören der Referenzvideos jeden
+Fachbegriff notieren, den Whisper zerlegt hat. Diese Fehler wiederholen sich bei jedem
+Video desselben Kunden, weil sie an seinem Wortschatz und seiner Aussprache hängen. Dazu
+eine **Schutzliste** korrekter Fachbegriffe, die nie „korrigiert" werden dürfen.
+
+**2 · Die Pflichtphrasen.** In regulierten Berufen — Steuerberatung, Recht, Medizin,
+Finanzberatung — relativiert der Kunde bewusst: „in der Regel", „meine Erfahrung ist",
+„unter Umständen", „besprich das mit deinem Berater". Das sieht nach Füllmaterial aus, ist
+aber Haftungsabsicherung. Diese Phrasen in die Config, damit der Schnitt sie nicht
+wegkürzt.
+
+**3 · Das Füllwort-Profil — messen, nicht annehmen.** Füllwörter pauschal zu entfernen ist
+ein Reflex, der Stimmen zerstört. Dichte zählen (Treffer pro Minute). Liegt sie niedrig,
+tragen die Füllwörter die Ruhe des Sprechers und bleiben drin. Beispielmessung eines
+ruhigen Erklärers: „ja" 1,3/min, „mal" 1,2/min, „also" 1,0/min — das ist für gesprochenes
+Deutsch wenig. `fuellwoerter_entfernen: false` ist dann eine Entscheidung, kein Versäumnis.
+
+**4 · Das Sprechtempo je Format.** WPM getrennt für Kurz- und Langformat messen; Ausreißer
+im fertigen Video deuten später auf einen Fehlschnitt hin.
+
+## Longform mit Präsentation: deiktische Marker sind die besten Anker
+
+Wer über Folien spricht, sagt beim Folienwechsel fast immer etwas Ortsgebundenes: „das
+siehst du in der Grafik hier", „ich habe es unten abgebildet", „du siehst es hier", „ich
+habe ein Beispiel gemacht". In der Analyse diese Formulierungen sammeln und in die Config
+schreiben.
+
+Für die Zuordnung Transkript ↔ Folie sind sie **harte Ankerpunkte** (±2 s), an denen das
+monotone Dynamic Programming festgenagelt wird — deutlich robuster als reine
+Wortähnlichkeit. Gegenprobe: Pausen über 1 s fallen bei Folienvorträgen meist mit
+Folienwechseln zusammen. Wo Pausenliste und Frame-Differenz-Kurve zusammentreffen, sitzt
+der Wechsel exakt dort.
+
+## Longform und Kurzformat zum selben Thema: nach Doppelaufnahmen suchen
+
+In der Analyse prüfen, ob Kurz- und Langvideos **dasselbe Thema mit denselben Zahlen**
+behandeln. Wenn ja, nimmt der Kunde beides getrennt auf — und das ist der Hebel, der ab dem
+ersten Video wirkt: Die Kurzfassung lässt sich aus dem Longform ableiten, ohne dass er ein
+zweites Mal vor die Kamera geht.
+
+Die Bausteine liegen im Longform meist als zusammenhängende Passagen vor: Hook plus
+Qualifier, die Beispielrechnung, der Abbinder. Der Bonus-Tipp ist regelmäßig ein
+eigenständiges Kurzvideo, weil er thematisch abgeschlossen ist und eine eigene Pointe hat.
+Der CTA-Block wird dabei **nie** übernommen.
+
+## Regie-Kommentare schneiden, Zahlendreher nur melden
+
+Live-Aufnahmen enthalten Selbstkommentare („Oh, ich bin schon weiter gegangen", „das muss
+ich jetzt alle nennen"). Die liegen zwischen zwei Pausen, tragen keinen Inhalt und werden
+geschnitten.
+
+Verspricht sich der Kunde bei einer **Zahl** und korrigiert nicht, kann der Schnitt das
+nicht reparieren. Solche Stellen werden gesammelt und dem Kunden als Liste zurückgegeben —
+das ist ein eigener Ausgabekanal des Prozesses, kein Fehlerfall.

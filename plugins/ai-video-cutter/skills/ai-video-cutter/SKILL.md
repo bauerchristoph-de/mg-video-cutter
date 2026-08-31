@@ -34,6 +34,7 @@ Rohvideo rein → fertiges, publizierbares Video raus. Dieser Skill bündelt das
 6. `references/hooks.md` — Hook-Overlays (Creator-Stil, Positionsregeln).
 7. `references/audio.md` — Ton-Pipeline (Fades, Master, SFX, bekannte Fallen).
 8. `references/render-technik.md` — Render-Architektur und Pflicht-QC (erst vor dem Bauen nötig).
+9. `references/qc-parameter.md` — die vollständige Parameterliste der Qualitätskontrolle (erst vor der Lieferung nötig, dann aber komplett).
 
 **Standards-Echo (Pflicht):** Vor dem ersten Render eines Videos in 5–8 Stichpunkten auflisten,
 welche Standards aus den References angewendet werden (Untertitel-Werte, Position, Kontrast-Maßnahme,
@@ -71,18 +72,48 @@ python3 scripts/qc.py --video final.mp4 --build build/ --plan cut-plan.json
 
 Pro Video wird ausschließlich `cut-plan.json` geschrieben (Aufbau: `scripts/README.md`, Vorlage: `scripts/cut-plan.example.json`). Fehlt eine Fähigkeit im Skript, gehört sie ins nächste Release — nicht in den Projektordner. Architektur und Render-Rezepte: `references/render-technik.md`.
 
-### 5 · QC vor Lieferung (hartes Gate)
-- Freeze-Scan (`freezedetect`) = 0 Treffer
-- Video- vs. Audio-Streamdauer < 0,1 s Differenz
-- Loudness −14 LUFS ±0,5, True Peak ≤ −1,2 dB; bei Fremd-Quellclips: Sprach-Lautheit über alle Quellen angeglichen (≤ 2 dB Differenz)
-- Frame-Strips an 2–3 Untertitel-Zeilenwechseln (kein Leerframe, kein Doppel-Highlight)
-- **Lesbarkeits-Gate:** Frames an den Kartenmitten von mindestens jeder 3. Untertitel-Karte ziehen und ANSEHEN + Luminanz der Textzone messen — helle Schrift auf hellem Grund (weißes Hemd!) ohne Scrim = durchgefallen, egal was die Timing-Gates sagen (Kontrast-Gate in `references/captions.md`)
-- **Kollisions-Check:** Untertitel/Hook liegen nicht über Gesicht, Händen, Logos oder Schrift im Bild
-- **Vollständigkeits-Gate:** jedes Transkript-Wort erscheint in Karaoke oder Emphasis — kein Wort fehlt
-- Onset-Stichprobe: 3–5 Wörter nach Sprechpausen gegen die RMS-Hüllkurve
-- SFX-Events gegen Animations-Onsets abgeglichen (maschinell, nicht nach Gehör); SFX-Peaks gemessen, nicht Dateienden (`make_sfx.py --check`)
+### 5 · QC vor Lieferung — alle Parameter, hartes Gate
 
-`scripts/qc.py` prüft diese Gates automatisch und beendet sich mit Fehlercode, wenn eines reißt. **Den erzeugten Kontaktbogen `qc-frames.jpg` trotzdem immer ansehen** — Zahlen erkennen nicht, dass helle Schrift auf einem weißen Hemd liegt.
+**Die Qualitätskontrolle prüft am Ende jeden Parameter**, nicht nur das, was auffällig
+aussieht: Technik, Untertitel, Bild, Inhalt, Marke, Recht. Vollständige Tabelle mit
+Sollwerten, Messverfahren und Konsequenz: `references/qc-parameter.md`.
+
+```bash
+python3 scripts/qc.py --video final.mp4 --build build/ --plan cut-plan.json \
+        --config kunden-config.yaml --format reel
+```
+
+**Die Kunden-Config gehört immer mit dazu** — ohne `--config` laufen nur die technischen
+Gates, und es fehlen genau die Prüfungen, die kundenspezifisch wehtun.
+
+Technik: A/V-Dauer < 0,1 s · Freeze-Scan = 0 · −14 LUFS ±0,5 · True Peak ≤ −1,2 dB ·
+Fremdquellen ≤ 2 dB Differenz · Auflösung und Laufzeit laut Format.
+
+Untertitel und Bild: Karten-Kontinuität · Vollständigkeit (jedes Wort sichtbar) ·
+Onset-Stichproben gegen die RMS-Hüllkurve · **Lesbarkeits-Gate** (Luminanz der Textzone —
+helle Schrift auf hellem Grund ohne Scrim ist durchgefallen, egal was die Timing-Gates
+sagen) · **Kollisions-Check** (kein Text über Gesicht, Händen, Logos, Bildschrift) ·
+SFX-Peaks gegen Animations-Onsets.
+
+Inhalt — hier entstehen die teuren Fehler:
+- **Zahlen-Rechenprüfung.** Jede Prozentrechnung im Endtext muss aufgehen. Whisper
+  vertippt sich bei Beträgen **hochkonfident** (gemessen: falsche Zahlen mit p = 0,94 bis
+  0,98) — die Konfidenz taugt deshalb nicht als Detektor, die Arithmetik schon.
+- **Zahlen-Deckung.** Jede angezeigte Zahl muss auch gesprochen worden sein.
+- **Glossar.** Kein bekannter Transkriptionsfehler des Kunden darf im Endtext stehen.
+- **Pflichtphrasen.** Rechtliche Weichmacher („in der Regel", „meine Erfahrung",
+  Verweis auf den Fachberater) müssen den Schnitt überleben — fallen sie weg, ändert sich
+  das Aussage-Niveau, nicht nur der Stil.
+- **CTA-Kanaltreue.** Longform trägt den CTA-Block, Reels enden nach dem Abbinder.
+- Sprechtempo im Profil ± Toleranz (Ausreißer deuten auf Fehlschnitt).
+
+`scripts/qc.py` beendet sich mit Fehlercode, wenn ein Gate reißt. **Den erzeugten
+Kontaktbogen `qc-frames.jpg` trotzdem immer ansehen** — Zahlen erkennen nicht, dass helle
+Schrift auf einem weißen Hemd liegt.
+
+**Die Gates gelten unabhängig vom Freigabemodus.** Wird die manuelle Freigabe nach zehn
+sauberen Durchläufen abgeschaltet, bleiben sie an — sie sind der Ersatz für das Augenpaar,
+nicht dessen Beifahrer.
 
 ### 6 · Lieferung
 Master in voller Qualität in den Ordner `fertig/` + kleine Preview (480p) in den Chat. Bei Feedback: Version hochzählen, nie überschreiben.
