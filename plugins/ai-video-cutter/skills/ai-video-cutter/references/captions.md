@@ -24,6 +24,12 @@ Ersetzt die Karaoke-Zeile (nie beides gleichzeitig, nie denselben Text doppelt).
 4. **Micro-Drift**: +1,8 % Scale über die Haltezeit; Exit: Whip-down + Fade 0,15 s.
 Optional gestaffelte Unterzeile (Sub-Font, +0,35 s versetzt). SFX: Pop auf das Landing (+0,04 s).
 
+**Die Kurven dieser vier Ebenen stehen als Zahlen in `animation-kurven.md`** —
+Overshoot 8,0 % ist `cubic-bezier(0.34, 1.50, 0.64, 1)`, der Peak liegt bei 59 %
+der Animationsdauer (also 0,118 s bei 0,20 s Dauer), und dort setzt der
+SFX-Versatz von 0,04 s an. „Ease-Out-Back mit ungefähr 8 %" ist keine prüfbare
+Angabe; die Tabelle dort ist es.
+
 *Bewusst gestrichen: Underline-Sweep — wirkte in der Praxis unruhig. Nicht wieder einführen.*
 
 ### 3 · `list-build` — Aufzählungs-Aufbau
@@ -77,6 +83,18 @@ Default für jede Karaoke-Zeile (Farben kommen weiter aus der Kunden-Config):
 Versalien — daran ausgerichtet sitzt der Chip systematisch zu hoch und die Schrift wirkt nicht mittig.
 Ink-Box einmal mit Referenzstring („Hg“) messen und für ALLE Wörter identisch verwenden,
 sonst springen die Chips beim Wortwechsel.
+
+**Gemessen wird mit exakt denselben Textparametern wie gerendert** — inklusive
+`letterSpacing` bzw. Laufweite. Wird beim Messen ein Parameter weggelassen, der
+beim Rendern gesetzt ist, stimmt jede Chip-Breite systematisch nicht, und kein
+Timing-Gate schlägt an. Praktisch heißt das: ein Stil-Objekt definieren und
+sowohl an die Messung als auch an das Zeichnen übergeben, nie zwei Parametersätze
+pflegen.
+
+**Und: prüfen, dass der Kunden-Font wirklich geladen ist.** Fällt die
+Schriftauflösung still auf einen Ersatz-Font zurück, wird gegen falsche Metriken
+gemessen — das Ergebnis sieht „fast richtig" aus und ist es nirgends. Der
+Ladefehler muss laut scheitern, nicht stillschweigend ersetzen.
 
 ## Kontrast-Gate (Pflicht vor jedem Render)
 
