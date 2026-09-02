@@ -12,13 +12,13 @@ alles Weitere wird über diese Tabellen gezielt nachgeschlagen.
 
 | Der Kunde sagt … | Zuerst lesen | Dann |
 |---|---|---|
-| „Mach ein Reel aus dem Webinar" | `schnitt-regeln.md` → Talking-Head | Standardablauf, ffmpeg-Engine |
+| „Mach ein Reel aus dem Webinar" | `schnitt-regeln.md` → Talking-Head | Standardablauf |
 | „Video für Instagram, hochkant" | `captions.md` → Position 9:16 | Hormozi-Zone 62–70 %, UI-Zonen meiden |
 | „Das gleiche nochmal als Ad" | `schnitt-regeln.md` → Ad vs. organisch | 15–45 s, harter Hook, `cta-arrow` Pflicht |
 | „Untertitel drauf, sonst nichts" | `captions.md` → Preset `karaoke` | Onset-Audit trotzdem Pflicht |
 | „Ruhiger, wir sind B2B" | `captions.md` → Preset `quiet` | plus Overshoot 1.30–1.40 (`animation-kurven.md`) |
-| „Mach 10 Varianten mit anderen Preisen" | `engine-remotion.md` → Abschnitt 1 und 6 | erst Lizenz-Gate, dann Zod-Schema + `calculateMetadata` |
-| „Ich will vorher sehen, bevor ihr rendert" | `engine-remotion.md` → Abschnitt 5 | Lizenz-Gate, hartkodiertes JSX für Studio-Editing |
+| „Mach 10 Varianten mit anderen Preisen" | `schnitt-regeln.md` → Ad vs. organisch | ein Schnittplan, n `cut-plan.json` — Stil bleibt identisch |
+| „Ich will vorher sehen, bevor ihr rendert" | Workflow Schritt 3 in der SKILL.md | Schnittplan als Freigabe-Dokument, dazu Standbilder der Kernframes |
 | „Der Titel soll knallen" | `hooks.md` | Creator-Stil, ein Keyword auf Chip, nie über dem Gesicht |
 | „Erstes Video für diesen Kunden" | `setup-interview.md` + `marken-analyse.md` | ohne Config und Markenprofil wird nicht gebaut |
 | „Und ein Post-Text dazu" | `begleit-content.md` | nur was in der Config aktiviert ist |
@@ -35,6 +35,7 @@ alles Weitere wird über diese Tabellen gezielt nachgeschlagen.
 | Untertitel unlesbar (weiß auf hellem Hemd) | Kontrast-Gate übersprungen. `contrast_probe.py`, dann Scrim oder Position | `captions.md` → Kontrast-Gate |
 | Chip sitzt zu hoch, Schrift wirkt nicht mittig | Ausrichtung an der Ascender- statt Ink-Box | `captions.md` → Referenz-Standard |
 | Chips springen beim Wortwechsel | Ink-Box je Wort statt einmalig am Referenzstring gemessen | `captions.md` |
+| Chip-Breiten stimmen systematisch nicht | Laufweite beim Messen weggelassen, oder gegen einen Ersatz-Font gemessen | `captions.md` → Referenz-Standard |
 | Ganze Halbsätze fehlen in den Untertiteln | Emphasis-Unterdrückung auf Karten- statt Wort-Ebene | `captions.md` → Vollständigkeits-Regel |
 | Leerframe / Doppel-Highlight am Zeilenwechsel | Overlay-Fenster inklusiv statt halboffen | `captions.md` → Timing-Regeln |
 | Pop ist hörbar vor dem Bild | SFX auf den Animationsstart statt auf den Peak gelegt | `animation-kurven.md` → Abschnitt 4 |
@@ -51,9 +52,6 @@ alles Weitere wird über diese Tabellen gezielt nachgeschlagen.
 | Hochkant-Clip wird falsch gecroppt | Rotations-Metadaten lügen — echten Frame extrahieren | `render-technik.md` → Umgebung |
 | Render bricht mitten ab, Datei zu kurz | kein Atomic Write | `render-technik.md` → Architektur |
 | Quelle liest still stockend, Spur zu kurz | Cloud-Sync-Ordner nicht hydratisiert | `render-technik.md` → Umgebung |
-| Remotion: „WebGL2 unavailable" | `--gl=angle` fehlt | `engine-remotion.md` → Abschnitt 7 |
-| Remotion: Chips sitzen falsch | gegen den Fallback-Font gemessen | `engine-remotion.md` → Abschnitt 4 |
-| Remotion: Studio-Werte ausgegraut | Markup zu komplex (`.map()`, berechnete Werte) | `engine-remotion.md` → Abschnitt 5 |
 
 ---
 
@@ -78,8 +76,6 @@ Whisper-Nachbearbeitung, Render-Rezepte, Umgebungs-Eigenheiten)
 **Qualitätskontrolle** → `qc-parameter.md` (alle Gates mit Sollwert, Messverfahren
 und Konsequenz)
 
-**Engine-Entscheidung** → `engine-remotion.md` (Lizenz-Gate zuerst)
-
 **Kundenwissen** → `setup-interview.md`, `marken-analyse.md`,
 `learnings-system.md`
 
@@ -101,7 +97,6 @@ und Konsequenz)
 | `ffmpeg -vf signalstats` | Luma/Sättigung des Materials | Analyse, Grading-Frage |
 | `ffmpeg -vf freezedetect` | Standbilder finden | nach JEDEM Render |
 | `ffprobe -show_entries format=duration` | A/V-Dauern vergleichen | QC |
-| `npx remotion studio --no-open` | Live-Vorschau für Freigaben | nur mit Lizenz-Freigabe |
 
 **Die Skripte werden benutzt, nicht nachgebaut.** Fehlt eine Fähigkeit, gehört
 sie ins nächste Release — nicht in den Projektordner. Ablauf und
@@ -111,7 +106,7 @@ sie ins nächste Release — nicht in den Projektordner. Ablauf und
 
 ## E · Die sechs Werte, die nie zur Diskussion stehen
 
-Egal welcher Fall, welche Engine, welcher Kunde:
+Egal welcher Fall, welcher Kunde, welches Format:
 
 1. Snap-Pop-Overshoot **8,0 %**, Dauer **0,20 s**, Exit **0,15 s**
 2. Anzeige-Vorlauf der Karaoke-Zeile **0,10 s**
