@@ -16,6 +16,25 @@
 - Trick bei knappen Pausen: beide Seiten überlappend aus derselben Quelle schneiden — Raumton mit sich selbst gecrossfadet ist nahtlos.
 - Benachbarte Segmente derselben Quelle: aus-Punkt == ein-Punkt (exakt kontiguierlich), sonst spielen Wortanfänge doppelt („Je– Jeden"). Nach jeder Timing-Änderung maschinell prüfen.
 
+**Diese Regel wird gemessen, nicht geschätzt.** Seit v0.8.0 gibt es dafür ein
+Gate — bis dahin war es die einzige zentrale Regel ohne maschinelle Prüfung, und
+verschluckte Silben fielen erst beim Ansehen des fertigen Renders auf:
+
+```bash
+# vor dem Schnittplan: wo darf überhaupt geschnitten werden
+python3 scripts/pausen_scan.py --audio cut.mp4 --report
+
+# nach dem Schnittplan, vor dem Build: liegt ein Schnitt auf Sprache?
+python3 scripts/pausen_scan.py --audio cut.mp4 --plan cut-plan.json
+
+# bei getrimmten Schnitten (Plosive!) mit der strengen Vorlaufregel
+python3 scripts/pausen_scan.py --audio cut.mp4 --plan cut-plan.json --vorlauf 0.25
+```
+
+Exit-Code 1 heißt: Schnittpunkt verschieben, nicht den Ton nachträglich
+ausblenden. Das Skript misst die Rauschschwelle des Materials selbst (Verfahren
+in `audio.md`), funktioniert also auch bei leisen Aufnahmen.
+
 ## Jump-Cuts kaschieren
 
 - **Punch-in** (zweiter Take +10–15 % Zoom, harter Schnitt) oder B-Roll-Cutaway.
