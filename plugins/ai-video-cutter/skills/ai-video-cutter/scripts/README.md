@@ -11,6 +11,12 @@ gehört es hier hinein und ins nächste Release — nicht in den Projektordner.
 ## Ablauf
 
 ```bash
+# 0a · VOR dem Schnittplan: wo darf überhaupt geschnitten werden
+python3 pausen_scan.py --audio cut.mp4 --report
+
+# 0b · NACH dem Schnittplan: liegt ein geplanter Schnitt auf Sprache?
+python3 pausen_scan.py --audio cut.mp4 --plan cut-plan.json
+
 # 1 · Kontrast messen und Scrim-Entscheidung in den Plan schreiben
 python3 contrast_probe.py --video cut.mp4 --plan cut-plan.json --apply
 
@@ -52,6 +58,8 @@ python3 qc.py --video final.mp4 --build build/ --plan cut-plan.json
 * `hook.until` — bis wann der Hook steht (danach greifen die Karaoke-Karten).
 * `emphasis.lines` — was die Emphasis anzeigt. Nur diese Wörter werden aus den
   Karaoke-Karten entfernt; alles andere im Zeitfenster bleibt sichtbar.
+* `cuts` — die Schnittzeitpunkte. Werden von `pausen_scan.py --plan` gegen die
+  gemessenen Sprechpausen geprüft.
 * `style` — optionale Überschreibungen nur für dieses Video. Der Normalfall ist,
   hier nichts zu setzen: Der Stil kommt aus der Kunden-Config.
 
@@ -59,6 +67,7 @@ python3 qc.py --video final.mp4 --build build/ --plan cut-plan.json
 
 | Prüfung | Wo | Verhindert |
 |---|---|---|
+| Schnitt liegt in einer Sprechpause | `pausen_scan.py --plan` | verschluckte Silben („Zweitens" → „weitens") |
 | Chip auf der Ink-Box | `build.py` | Chip sitzt zu hoch, Schrift wirkt nicht mittig |
 | Wort-Ebene statt Karten-Ebene bei Emphasis | `build.py` | verschwundene Halbsätze |
 | Sprechpause > 0,6 s bricht die Karte | `build.py` | Wörter aus zwei Sinneinheiten in einer Karte |
@@ -71,9 +80,14 @@ python3 qc.py --video final.mp4 --build build/ --plan cut-plan.json
 
 `pillow`, `pyyaml`, `ffmpeg`/`ffprobe` im Pfad.
 Fehlt PyYAML: `pip install pyyaml --break-system-packages`
+`pausen_scan.py` braucht nur ffmpeg/ffprobe — kein numpy, kein PyYAML.
 
 ## Performance
 
 `build.py` dedupliziert identische Frames (bei Karaoke ändert sich nur alle
 ~9 Frames etwas) und hardlinkt sie. Gemessen an einem 11,5-s-Testvideo:
 344 Frames, davon 84 gerendert — **76 % gespart**, ~13 s Laufzeit bei 1080×1920.
+
+`pausen_scan.py` lässt die Arbeit über die Videolänge in ffmpeg laufen und sieht
+in Python nur die Ereignisliste (typisch 10–200 Pausen). Bei 10× längerem
+Material wächst nur die ffmpeg-Zeit linear.
