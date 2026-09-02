@@ -24,18 +24,6 @@ länger"), Bauteile und Werkzeuge auf die jeweils zuständige Stelle zurück.
 Die Pflicht-Lesereihenfolge unten ist der Grundstock für jedes Video. Alles
 darüber hinaus wird gezielt nachgeschlagen — nicht vorsorglich gelesen.
 
-## Zwei Engines, eine Standardwahl
-
-Der **Standard ist die ffmpeg-Pipeline** in `scripts/`: schneller, erprobt, keine
-Lizenzfrage. Für drei Fälle gibt es eine zweite Engine (Remotion) — Live-Vorschau
-in Kunden-Freigabeschleifen, viele datengetriebene Varianten aus einem Datensatz,
-sehr lange Timelines mit vielen Segmentgrenzen.
-
-**Remotion wird nie ungefragt eingerichtet.** Es ist ab 4 Personen im Unternehmen
-des Kunden lizenzpflichtig; die Freigabe muss vor der Installation eingeholt und
-in der Kunden-Config festgehalten werden. Entscheidungstabelle, Lizenz-Gate und
-Fallen: `references/engine-remotion.md`. Im Zweifel: ffmpeg.
-
 ## Update-Check (einmal pro Unterhaltung, still)
 
 1. Installierte Version aus `.claude-plugin/plugin.json` dieses Plugins lesen (Feld `version`) — nie raten, nie hart annehmen.
@@ -55,7 +43,7 @@ Fallen: `references/engine-remotion.md`. Im Zweifel: ffmpeg.
 5. `references/captions.md` — Untertitel-System (Karaoke + Emphasis-Presets, vermessener Referenz-Standard, Kontrast-Gate).
 6. `references/hooks.md` — Hook-Overlays (Creator-Stil, Positionsregeln).
 7. `references/audio.md` — Ton-Pipeline (Fades, Master, SFX, bekannte Fallen).
-8. `references/animation-kurven.md` — die Kurven und Frame-Werte als Zahlen (Overshoot, Peak-Lage, Rundung). Gilt für beide Engines.
+8. `references/animation-kurven.md` — die Kurven und Frame-Werte als Zahlen (Overshoot, Peak-Lage, Rundung, Skalierung).
 9. `references/render-technik.md` — Render-Architektur und Pflicht-QC (erst vor dem Bauen nötig).
 10. `references/qc-parameter.md` — die vollständige Parameterliste der Qualitätskontrolle (erst vor der Lieferung nötig, dann aber komplett).
 
@@ -63,8 +51,8 @@ Fallen: `references/engine-remotion.md`. Im Zweifel: ffmpeg.
 welche Standards aus den References angewendet werden (Untertitel-Werte, Position, Kontrast-Maßnahme,
 Hook-Position, SFX-Plan). Wer das Echo nicht schreiben kann, hat die References nicht gelesen —
 beide vom Kunden reklamierten Fehlerserien eines echten Builds hatten genau diese Ursache.
-Wird die zweite Engine benutzt, gehören die sechs Vertragswerte aus
-`animation-kurven.md` §5 ausdrücklich ins Echo.
+Die sechs verbindlichen Animationswerte aus `animation-kurven.md` §5 gehören
+ausdrücklich ins Echo — sie sind der Vertrag zwischen Schnittplan und Render.
 
 ## Workflow (verbindlich, mit Freigabe-Schleifen)
 
@@ -172,7 +160,7 @@ Alle Korrekturen der Feedbackrunden kategorisieren: kundenspezifisch → `kunden
 - **Alles framegenau und mehrschichtig.** Ein Highlight-Moment = Text-Pop + Punch-Zoom im Video + SFX im selben Frame. Einzeln wirkt nichts davon.
 - **Schnitte in die Sprechpause, nie auf den Wortanfang.** Sonst werden Silben verschluckt („Zweitens" → „weitens").
 - **Messen statt hören/raten.** Onsets, Pausen, Beats, Loudness — alles wird per RMS/ebur128 gemessen. Timing nach Gehör ist zweimal schiefgegangen, seitdem Pflicht. Auch Schwellwerte werden gemessen, nicht gesetzt: die Rauschschwelle für die Pausenerkennung kommt aus dem Material selbst (`loudnorm input_thresh`), nicht aus einer Konstante.
-- **Zahlen statt Adjektive.** „Ease-Out-Back mit ungefähr 8 %" ist nicht prüfbar, `cubic-bezier(0.34, 1.50, 0.64, 1)` ist es. Jeder Animationswert steht als Zahl in `references/animation-kurven.md` — und gilt in beiden Engines gleich.
+- **Zahlen statt Adjektive.** „Ease-Out-Back mit ungefähr 8 %" ist nicht prüfbar, `cubic-bezier(0.34, 1.50, 0.64, 1)` ist es. Jeder Animationswert steht als Zahl in `references/animation-kurven.md` — als Kurve, Dauer und Frame-Bezug, nicht als Adjektiv.
 - **Ein CI, eine Akzentfarbe.** Konsistenz schlägt Abwechslung; die Akzentfarbe kommt aus der Kunden-Config und ist überall dieselbe (Chip, Keyword, Glow, CTA).
 - **Jede Ersetzung im Generator mit Assert, jede Änderung mit maschineller Gegenprüfung.** Stille Fehlschläge haben schon ganze Feedbackrunden gekostet.
 

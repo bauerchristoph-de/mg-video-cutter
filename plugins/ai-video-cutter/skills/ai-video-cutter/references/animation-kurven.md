@@ -1,19 +1,18 @@
 # Animations-Kurven und Frame-Mathematik
 
-Gilt für **beide Engines** (ffmpeg-Pipeline und Remotion). Die Werte hier sind der
-gemeinsame Nenner: dieselbe Emphasis muss in beiden Engines identisch aussehen,
-sonst ist die Engine-Wahl eine Stil-Entscheidung statt einer technischen.
-
 Bis v0.7 standen die Kurven als Prosa in `captions.md` („Ease-Out-Back, Overshoot
-~8 %"). Prosa lässt sich nicht prüfen. Hier stehen die Zahlen.
+~8 %"). Prosa lässt sich nicht prüfen — zwei Builds mit derselben Beschreibung
+sahen unterschiedlich aus, und niemand konnte sagen, welcher richtig war. Hier
+stehen die Zahlen.
 
 ---
 
 ## 1 · Die Kurven-Tabelle
 
 Alle Kurven als CSS-`cubic-bezier(x1, y1, x2, y2)` notiert. Das ist die
-Austauschwährung: Remotion nimmt sie direkt (`Easing.bezier(...)`), Python wertet
-sie mit derselben Formel aus (Snippet unten), und jeder Designer versteht sie.
+Austauschwährung: Python wertet sie mit der Formel unten aus, jedes Design-Tool
+versteht dieselbe Schreibweise, und der Wert ist damit zwischen Plan, Generator
+und Gestaltung eindeutig.
 
 | Einsatz | Kurve | Charakter |
 |---|---|---|
@@ -61,10 +60,10 @@ def bezier_y(x, x1, y1, x2, y2, iterationen=40):
 
 **Die Falle:** Eine linear interpolierte Skalierung wirkt nicht linear. Je größer
 der Zoom schon ist, desto kleiner wirkt derselbe absolute Zuwachs — die Fahrt
-scheint auszubremsen, obwohl die Zahlen gleichmäßig steigen. Remotion hat dafür
-die Option `output: 'perceptual-scale'`; die Begründung steht dort wörtlich:
-*„if the output is linear, the perceived scale would be smaller the larger the
-scale gets."*
+scheint auszubremsen, obwohl die Zahlen gleichmäßig steigen. Der Grund ist
+wahrnehmungspsychologisch: Größenunterschiede werden relativ empfunden, nicht
+absolut (Weber-Fechner). Wer linear interpoliert, baut deshalb systematisch eine
+Fahrt, die hinten zäh wird.
 
 **Die Korrektur** ist geometrische statt arithmetischer Interpolation:
 
@@ -165,10 +164,10 @@ Peak bei 57,3 % der Dauer, also 0,115 s.)
 
 ---
 
-## 5 · Was in beiden Engines gleich bleiben muss
+## 5 · Die sechs verbindlichen Werte
 
-Beim Wechsel der Engine (siehe `engine-remotion.md`) darf sich das Ergebnis nicht
-ändern. Diese sechs Werte sind der Vertrag:
+Diese Werte sind der Vertrag zwischen Schnittplan und Render. Sie stehen nicht
+zur Diskussion und werden nicht pro Video neu entschieden:
 
 1. Overshoot des Snap-Pop: **8,0 %** (`y1 = 1.50`)
 2. Snap-Pop-Dauer: **0,20 s**, Exit **0,15 s**
@@ -177,4 +176,6 @@ Beim Wechsel der Engine (siehe `engine-remotion.md`) darf sich das Ergebnis nich
 5. Zoomstufen: **100 / 112 / 125 %**, harte Wechsel
 6. Emphasis-Dichte: **max. 3 pro Minute**
 
-Beim Engine-Wechsel diese sechs Werte im Standards-Echo ausdrücklich nennen.
+Diese sechs Werte gehören ins Standards-Echo, bevor gebaut wird. Abweichungen
+sind Kunden-Learnings und gehören in `kunden-learnings.md` oder die Config — nie
+in einen Einzelfall-Beschluss während des Builds.

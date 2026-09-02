@@ -59,7 +59,7 @@ Formatvorgaben. **Die Config gehört immer mit dazu.**
 |---|---|---|---|---|
 | 21 | **Schnitt in der Sprechpause** | jeder Cut im erlaubten Fenster | `pausen_scan.py --plan` | Stopp |
 | 22 | Font-Identität | gemessen == gerendert, kein Fallback-Font | `build.py` (Assert) | Stopp |
-| 23 | Engine-Vertragswerte | die sechs Werte aus `animation-kurven.md` §5 | Standards-Echo | Stopp |
+| 23 | Verbindliche Animationswerte | die sechs Werte aus `animation-kurven.md` §5 | Standards-Echo | Stopp |
 
 **Zu 21 — warum das ein eigenes Gate wurde.** „Schnitte gehören in die
 Sprechpause" ist die wichtigste Regel des Systems und war bis v0.8.0 die einzige
@@ -78,9 +78,10 @@ falsche Metriken vermessen. Die Chips sitzen dann systematisch daneben, das Vide
 besteht jedes Timing-Gate und sieht trotzdem falsch aus. Der Ladefehler muss laut
 scheitern.
 
-**Zu 23.** Wird für ein Video die zweite Engine benutzt (`engine-remotion.md`),
-müssen die sechs Vertragswerte im Standards-Echo ausdrücklich genannt werden —
-sonst wird die Engine-Wahl unbemerkt zur Stil-Änderung.
+**Zu 23.** Die sechs Werte aus `animation-kurven.md` §5 gehören ins
+Standards-Echo, bevor gebaut wird. Sie sind der Vertrag zwischen Schnittplan und
+Render: wer sie nicht benennen kann, hat sie auch nicht gesetzt — und dann
+entscheidet der Zufall über den Look, nicht das System.
 
 ---
 

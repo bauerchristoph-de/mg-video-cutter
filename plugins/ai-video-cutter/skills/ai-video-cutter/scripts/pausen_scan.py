@@ -18,8 +18,8 @@ Eine feste Rauschschwelle (-30 dB o. ä.) ist bei leisen Aufnahmen blind und bei
 lauten überempfindlich — sie findet entweder gar keine oder überall Pausen.
 Deshalb zwei Durchläufe: erst `loudnorm` in JSON-Modus messen (liefert die
 EBU-R128-Gating-Schwelle `input_thresh` des konkreten Materials), dann
-`silencedetect` mit genau dieser Schwelle. Das Verfahren stammt aus der
-Remotion-Doku (silence-detection) und ist dort für dieselbe Aufgabe belegt.
+`silencedetect` mit genau dieser Schwelle. Damit passt sich die Erkennung an
+jede Aufnahmesituation an, statt eine Konstante zu unterstellen.
 
 PERFORMANCE-ENTSCHEIDUNGEN
 --------------------------
