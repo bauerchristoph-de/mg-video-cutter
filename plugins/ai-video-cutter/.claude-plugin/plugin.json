@@ -1,6 +1,6 @@
 {
   "name": "ai-video-cutter",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "AI Video-Cutter: Rohvideo rein, fertiges Social-Media-Video raus — Schnitt, Karaoke-Untertitel, animierte Emphasis-Captions im eigenen CI, SFX, Ton-Mastering. Erste Aktivierung führt Setup-Interview und Marken-Analyse durch und legt den lokalen Kundenordner an.",
   "author": {
     "name": "Mehr Geschäft",
@@ -13,6 +13,7 @@
     "untertitel",
     "captions",
     "social-media",
-    "ffmpeg"
+    "ffmpeg",
+    "remotion"
   ]
 }

@@ -53,6 +53,35 @@ Formatvorgaben. **Die Config gehört immer mit dazu.**
 | 19 | Sprechtempo | Profil-WPM ± Toleranz | Wörter / Laufzeit | Warnung |
 | 20 | Regie-Kommentare | keine im Schnitt verblieben | **Auge** + Suchliste | Warnung |
 
+## D · Schnitt und Animation (seit v0.8.0)
+
+| # | Parameter | Sollwert | Messung | Bei Abweichung |
+|---|---|---|---|---|
+| 21 | **Schnitt in der Sprechpause** | jeder Cut im erlaubten Fenster | `pausen_scan.py --plan` | Stopp |
+| 22 | Font-Identität | gemessen == gerendert, kein Fallback-Font | `build.py` (Assert) | Stopp |
+| 23 | Engine-Vertragswerte | die sechs Werte aus `animation-kurven.md` §5 | Standards-Echo | Stopp |
+
+**Zu 21 — warum das ein eigenes Gate wurde.** „Schnitte gehören in die
+Sprechpause" ist die wichtigste Regel des Systems und war bis v0.8.0 die einzige
+zentrale Regel ohne maschinelle Prüfung. Verschluckte Silben („Zweitens" →
+„weitens") fielen deshalb erst beim Ansehen des fertigen Renders auf — also nach
+dem teuersten Schritt. Der Scan misst die Rauschschwelle des Materials selbst
+(`loudnorm input_thresh` → `silencedetect`), funktioniert damit auch bei leisen
+Aufnahmen, und läuft zweimal: einmal **vor** dem Schnittplan als Vorschlagsliste,
+einmal **nach** dem Schnittplan als Gate.
+
+Bei getrimmten Schnitten mit `--vorlauf 0.25` fahren: Plosive (D, Z, K, B)
+beginnen real bis 0,2 s vor dem Whisper-Onset.
+
+**Zu 22.** Ein still auf einen Ersatz-Font zurückgefallener Text wird gegen
+falsche Metriken vermessen. Die Chips sitzen dann systematisch daneben, das Video
+besteht jedes Timing-Gate und sieht trotzdem falsch aus. Der Ladefehler muss laut
+scheitern.
+
+**Zu 23.** Wird für ein Video die zweite Engine benutzt (`engine-remotion.md`),
+müssen die sechs Vertragswerte im Standards-Echo ausdrücklich genannt werden —
+sonst wird die Engine-Wahl unbemerkt zur Stil-Änderung.
+
 ---
 
 ## Warum die Zahlenprüfung nicht über die Konfidenz läuft

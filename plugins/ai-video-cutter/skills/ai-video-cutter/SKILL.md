@@ -14,6 +14,28 @@ Rohvideo rein → fertiges, publizierbares Video raus. Dieser Skill bündelt das
 - **Dieses Plugin = Allgemeinwissen.** Regeln, QC, Technik — zentral gepflegt, kommt per Plugin-Update. Plugin-Dateien nie lokal editieren oder kopieren-und-anpassen.
 - **Kundenordner = Kundenwissen.** `kunden-config.yaml`, `marken-profil.md`, `kunden-learnings.md`, Fonts/Logo, Referenz-Videos — lebt lokal beim Kunden, wird vom Skill angelegt und gepflegt. Details und Ordnerstruktur: `references/learnings-system.md`.
 
+## Nachschlagen statt alles lesen
+
+Der Skill deckt inzwischen viele Fälle ab. Der Einstieg läuft deshalb über den
+**Fall**, nicht über die Dateiliste: `references/loesungsbibliothek.md` führt
+Auftragstypen, Symptome („Silbe verschluckt", „Chips springen", „Ton am Ende
+länger"), Bauteile und Werkzeuge auf die jeweils zuständige Stelle zurück.
+
+Die Pflicht-Lesereihenfolge unten ist der Grundstock für jedes Video. Alles
+darüber hinaus wird gezielt nachgeschlagen — nicht vorsorglich gelesen.
+
+## Zwei Engines, eine Standardwahl
+
+Der **Standard ist die ffmpeg-Pipeline** in `scripts/`: schneller, erprobt, keine
+Lizenzfrage. Für drei Fälle gibt es eine zweite Engine (Remotion) — Live-Vorschau
+in Kunden-Freigabeschleifen, viele datengetriebene Varianten aus einem Datensatz,
+sehr lange Timelines mit vielen Segmentgrenzen.
+
+**Remotion wird nie ungefragt eingerichtet.** Es ist ab 4 Personen im Unternehmen
+des Kunden lizenzpflichtig; die Freigabe muss vor der Installation eingeholt und
+in der Kunden-Config festgehalten werden. Entscheidungstabelle, Lizenz-Gate und
+Fallen: `references/engine-remotion.md`. Im Zweifel: ffmpeg.
+
 ## Update-Check (einmal pro Unterhaltung, still)
 
 1. Installierte Version aus `.claude-plugin/plugin.json` dieses Plugins lesen (Feld `version`) — nie raten, nie hart annehmen.
@@ -33,13 +55,16 @@ Rohvideo rein → fertiges, publizierbares Video raus. Dieser Skill bündelt das
 5. `references/captions.md` — Untertitel-System (Karaoke + Emphasis-Presets, vermessener Referenz-Standard, Kontrast-Gate).
 6. `references/hooks.md` — Hook-Overlays (Creator-Stil, Positionsregeln).
 7. `references/audio.md` — Ton-Pipeline (Fades, Master, SFX, bekannte Fallen).
-8. `references/render-technik.md` — Render-Architektur und Pflicht-QC (erst vor dem Bauen nötig).
-9. `references/qc-parameter.md` — die vollständige Parameterliste der Qualitätskontrolle (erst vor der Lieferung nötig, dann aber komplett).
+8. `references/animation-kurven.md` — die Kurven und Frame-Werte als Zahlen (Overshoot, Peak-Lage, Rundung). Gilt für beide Engines.
+9. `references/render-technik.md` — Render-Architektur und Pflicht-QC (erst vor dem Bauen nötig).
+10. `references/qc-parameter.md` — die vollständige Parameterliste der Qualitätskontrolle (erst vor der Lieferung nötig, dann aber komplett).
 
 **Standards-Echo (Pflicht):** Vor dem ersten Render eines Videos in 5–8 Stichpunkten auflisten,
 welche Standards aus den References angewendet werden (Untertitel-Werte, Position, Kontrast-Maßnahme,
 Hook-Position, SFX-Plan). Wer das Echo nicht schreiben kann, hat die References nicht gelesen —
 beide vom Kunden reklamierten Fehlerserien eines echten Builds hatten genau diese Ursache.
+Wird die zweite Engine benutzt, gehören die sechs Vertragswerte aus
+`animation-kurven.md` §5 ausdrücklich ins Echo.
 
 ## Workflow (verbindlich, mit Freigabe-Schleifen)
 
@@ -57,12 +82,23 @@ Audio extrahieren, mit Whisper transkribieren (`word_timestamps=True`, Modell me
 **Bild-Analyse gehört dazu:** Luma/Sättigung des Materials messen (`signalstats`). Ist das Material flau oder high-key (kein Schwarzpunkt, Sättigung < 0,10), dem Kunden ein dezentes Color Grading VORSCHLAGEN und bei Ja umsetzen — nie ungefragt, und nie auf Fremd-Quellclips (Reaction-Splits) anwenden.
 
 ### 3 · Schnittplan (Freigabe-Dokument)
-Als Tabelle: Segment | Quellzeit in/out | Zoomstufe | Untertitel-Modus (karaoke/emphasis) | SFX. Dazu in 3 Sätzen: dramaturgische Idee (Hook → Kernaussagen → CTA), welche Stellen Emphasis bekommen und warum. **Erst nach Freigabe bauen.**
+
+**Zuerst messen, wo geschnitten werden darf** — nicht nach Transkript raten:
+
+```bash
+python3 scripts/pausen_scan.py --audio cut.mp4 --report
+```
+
+Das listet die echten Sprechpausen und die erlaubten Schnittfenster (Pause abzüglich
+Vor- und Nachlauf). Findet der Scan keine Pause, ist das ein Alarm, kein Ergebnis.
+
+Dann die Tabelle: Segment | Quellzeit in/out | Zoomstufe | Untertitel-Modus (karaoke/emphasis) | SFX. Dazu in 3 Sätzen: dramaturgische Idee (Hook → Kernaussagen → CTA), welche Stellen Emphasis bekommen und warum. **Erst nach Freigabe bauen.**
 
 ### 4 · Build — mit den mitgelieferten Skripten, nie nachgebaut
 Die Skripte in `scripts/` sind die ausführbare Hälfte dieses Skills. Sie werden benutzt, nicht neu geschrieben — jede Eigenbau-Pipeline hat bisher dieselben Fehler reproduziert (Chip an der Ascender- statt Ink-Box, verschluckte Wörter, unlesbare Zeilen).
 
 ```bash
+python3 scripts/pausen_scan.py --audio cut.mp4 --plan cut-plan.json   # Gate: kein Schnitt auf Sprache
 python3 scripts/contrast_probe.py --video cut.mp4 --plan cut-plan.json --apply
 python3 scripts/build.py --config kunden-config.yaml --plan cut-plan.json --out build/
 python3 scripts/make_sfx.py --events build/events.json --duration <sek> --out build/sfx.wav --check
@@ -90,6 +126,10 @@ die kundenspezifisch wehtun.
 
 Technik: A/V-Dauer < 0,1 s · Freeze-Scan = 0 · −14 LUFS ±0,5 · True Peak ≤ −1,2 dB ·
 Fremdquellen ≤ 2 dB Differenz · Auflösung und Laufzeit laut Format.
+
+Schnitt: **kein Schnitt auf Sprache** (`pausen_scan.py --plan`, Exit 1 = nicht
+bauen). Bei getrimmten Schnitten mit `--vorlauf 0.25` fahren — Plosive beginnen
+bis 0,2 s vor dem Whisper-Onset.
 
 Untertitel und Bild: Karten-Kontinuität · Vollständigkeit (jedes Wort sichtbar) ·
 Onset-Stichproben gegen die RMS-Hüllkurve · **Lesbarkeits-Gate** (Luminanz der Textzone —
@@ -131,7 +171,8 @@ Alle Korrekturen der Feedbackrunden kategorisieren: kundenspezifisch → `kunden
 - **Ruhe schlägt Dauerfeuer.** Karaoke-Untertitel tragen 80–90 % des Videos ruhig; Emphasis-Momente (max. 3/Minute) wirken nur durch den Kontrast.
 - **Alles framegenau und mehrschichtig.** Ein Highlight-Moment = Text-Pop + Punch-Zoom im Video + SFX im selben Frame. Einzeln wirkt nichts davon.
 - **Schnitte in die Sprechpause, nie auf den Wortanfang.** Sonst werden Silben verschluckt („Zweitens" → „weitens").
-- **Messen statt hören/raten.** Onsets, Pausen, Beats, Loudness — alles wird per RMS/ebur128 gemessen. Timing nach Gehör ist zweimal schiefgegangen, seitdem Pflicht.
+- **Messen statt hören/raten.** Onsets, Pausen, Beats, Loudness — alles wird per RMS/ebur128 gemessen. Timing nach Gehör ist zweimal schiefgegangen, seitdem Pflicht. Auch Schwellwerte werden gemessen, nicht gesetzt: die Rauschschwelle für die Pausenerkennung kommt aus dem Material selbst (`loudnorm input_thresh`), nicht aus einer Konstante.
+- **Zahlen statt Adjektive.** „Ease-Out-Back mit ungefähr 8 %" ist nicht prüfbar, `cubic-bezier(0.34, 1.50, 0.64, 1)` ist es. Jeder Animationswert steht als Zahl in `references/animation-kurven.md` — und gilt in beiden Engines gleich.
 - **Ein CI, eine Akzentfarbe.** Konsistenz schlägt Abwechslung; die Akzentfarbe kommt aus der Kunden-Config und ist überall dieselbe (Chip, Keyword, Glow, CTA).
 - **Jede Ersetzung im Generator mit Assert, jede Änderung mit maschineller Gegenprüfung.** Stille Fehlschläge haben schon ganze Feedbackrunden gekostet.
 

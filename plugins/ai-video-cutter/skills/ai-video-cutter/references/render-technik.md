@@ -33,6 +33,20 @@ Architektur für reproduzierbare, resumable Renders mit ffmpeg — entstanden au
 
 Freezes können zufällig pro Render-Lauf entstehen (stockende Quell-Reads) — ein einmal sauberer Durchlauf beweist nichts für den nächsten. Nach JEDEM Re-Render neu prüfen.
 
+## Frames sind die Wahrheit, Sekunden die Schreibweise
+
+Der `cut-plan.json` führt alle Zeiten in **Sekunden**. Frames entstehen erst im
+Generator, aus der tatsächlichen fps des Materials — `frame = round(sekunden * fps)`.
+
+- **Nie Frame-Konstanten in Regeln oder Plänen.** Eine Transition ist „0,18 s",
+  nicht „6 Frames": bei einem 60-fps-Kunden dauert sie sonst die Hälfte.
+- **Animationsfortschritt gegen `dauer_frames - 1` normalisieren**, nicht gegen
+  `dauer_frames`. Sonst erreicht die Kurve nie 1,0, der Snap-Pop landet dauerhaft
+  unter seiner Zielgröße und nichts schlägt an. Vollständige Herleitung und
+  Rundungstabelle: `animation-kurven.md` Abschnitt 3.
+- **Dauern, die Material enthalten müssen** (Segmentlänge, Gesamtlaufzeit),
+  werden mit `ceil()` aufgerundet; **Zeitpunkte** mit `round()`. Nie mischen.
+
 ## Umgebungs-Eigenheiten
 
 - ffmpeg-Version einmal prüfen (`ffmpeg -version`, `ffmpeg -h filter=xfade`) und Fähigkeiten in der Kunden-Config notieren. 4.4: kein `xfade=zoomin` → `hblur` als Snap-Ersatz.
@@ -40,3 +54,12 @@ Freezes können zufällig pro Render-Lauf entstehen (stockende Quell-Reads) — 
 - Rotations-Metadaten: `ffprobe` zeigt bei Phone-Clips oft 1920×1080 trotz Hochkant — immer einen echten Frame extrahieren und Maße prüfen, bevor gecroppt wird.
 - Cloud-Sync-Ordner (OneDrive/Dropbox „Files on Demand"): Quellen vorher hydratisieren, sonst stille Lese-Stalls → verkürzte Video-Spuren.
 - Deploy-Checkliste bei Timing-Änderungen: Render-Skript + events.json + SFX-WAV zusammen erneuern — nie nur das Skript.
+- **Getrimmte Standalone-Dateien immer re-encodieren.** `-ss` mit `-c copy` schneidet auf den nächsten Keyframe und hinterlässt eingefrorene Frames am Anfang — die dann im Freeze-Scan als Fehler auftauchen, deren Ursache man an der falschen Stelle sucht. Richtig: `ffmpeg -ss <in> -i quelle.mp4 -to <out> -c:v libx264 -c:a aac ziel.mp4`. Innerhalb der Pipeline gilt das ohnehin, weil jedes Segment neu kodiert wird.
+
+## Andere Engine?
+
+Alles oben beschreibt die ffmpeg-Pipeline — den Standard. Für die Fälle, in denen
+eine zweite Engine sinnvoll ist (Live-Vorschau in Freigabeschleifen, viele
+datengetriebene Varianten, sehr lange Timelines), steht die Entscheidungstabelle
+samt Lizenz-Gate in `engine-remotion.md`. **Die Master-Kette, die QC-Gates und
+das Onset-Audit bleiben auch dort unverändert bei ffmpeg/Python.**

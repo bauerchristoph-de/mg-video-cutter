@@ -40,6 +40,12 @@ technik:
   rohmaterial_ordner: ''
   ausgabe_ordner: ''
 
+engine:                         # Standard ist immer ffmpeg — siehe references/engine-remotion.md
+  remotion_erlaubt: false       # true NUR nach ausdrücklicher Kundenfreigabe zur Lizenzfrage
+  lizenz_geklaert_am: null      # Datum der Freigabe (Remotion ist ab 4 Personen kostenpflichtig)
+  personen_im_unternehmen: null # entscheidet über die Lizenzpflicht
+  node_verfuegbar: null         # true/false — Remotion braucht Node + Headless-Chrome
+
 musik:
   quelle: keine                 # envato | artlist | keine
   lizenz_hinweis: 'Nur lizenziertes Material; keine Trending-Sounds bei Fremd-Shares.'

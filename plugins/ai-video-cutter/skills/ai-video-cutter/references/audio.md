@@ -22,6 +22,33 @@ Der Ton entscheidet, ob ein Schnitt professionell wirkt. Jede Regel hier stammt 
 - Platzierung: Pop auf jedes Emphasis-Landing (+0,04 s nach Animations-Onset), Boom nur auf den größten Zahlen-Moment, Whoosh auf Snap-Transitions (läuft auf den Schnitt zu, Start ≈ 0,17 s davor). Nicht mehr — Zurückhaltung ist der Unterschied zu Spam-Content.
 - **Bei jeder Timing-Änderung die SFX-Spur mit regenerieren** und die Event-Zeiten maschinell gegen die Overlay-Enable-Zeiten im Render-Skript prüfen. Keine hartkodierten Zeiten in der Event-Generierung — immer aus den Emphasis-Definitionen ableiten.
 
+## Pausen adaptiv messen (statt mit fester Schwelle)
+
+Sprechpausen sind die Grundlage von zwei Dingen: der wichtigsten Schnittregel
+(„Schnitte in die Pause") und der Karten-Logik (Pause > 0,6 s bricht die Karte).
+Beide waren bis v0.8 auf eine feste Rauschschwelle angewiesen — und die ist bei
+leisem Material blind und bei lautem überempfindlich.
+
+**Richtig ist ein zweistufiges Verfahren:**
+
+```bash
+# 1 · Gating-Schwelle DES MATERIALS messen
+ffmpeg -i cut.mp4 -map 0:a -af loudnorm=print_format=json -f null -
+#    -> input_i      = integrierte Lautheit
+#    -> input_thresh = EBU-R128-Gating-Schwelle  <- das ist der gesuchte Wert
+
+# 2 · Stille mit genau dieser Schwelle suchen
+ffmpeg -i cut.mp4 -map 0:a -af "silencedetect=noise=${THRESH}dB:d=0.25" -f null -
+```
+
+`d=0.25` ist die Untergrenze einer nutzbaren Sprechpause — kürzeres ist eine
+Atempause innerhalb des Wortflusses und kein Schnittpunkt.
+
+Beides zusammen macht `scripts/pausen_scan.py`, inklusive der Umrechnung in
+erlaubte Schnittfenster (Pause minus Vor- und Nachlauf) und dem Gate gegen den
+`cut-plan.json`. **Findet der Scan keine einzige Pause, ist das kein Ergebnis,
+sondern ein Alarm** — meist ist die falsche Audiospur gemappt.
+
 ## Bekannte Fallen (Pflichtwissen)
 
 - **AAC-Priming-Drift:** mp4/AAC-Segmente + concat-Demuxer → jede Segmentgrenze injiziert ~12–27 ms Stille, sobald ffmpeg das Audio DEKODIERT. Player spielen die Concat-Datei korrekt, aber jede Master-Stufe backt den Drift ein (kumulativ 0,5–0,8 s pro 100 s → Untertitel wirken ab der Mitte asynchron). Fix: siehe Master-Kette Schritt 1. Verifikation: silencedetect-Pausenpositionen Concat vs. Final müssen auf ±30 ms übereinstimmen.
