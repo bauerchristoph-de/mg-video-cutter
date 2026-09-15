@@ -54,7 +54,8 @@ sondern ein Alarm** — meist ist die falsche Audiospur gemappt.
 - **AAC-Priming-Drift:** mp4/AAC-Segmente + concat-Demuxer → jede Segmentgrenze injiziert ~12–27 ms Stille, sobald ffmpeg das Audio DEKODIERT. Player spielen die Concat-Datei korrekt, aber jede Master-Stufe backt den Drift ein (kumulativ 0,5–0,8 s pro 100 s → Untertitel wirken ab der Mitte asynchron). Fix: siehe Master-Kette Schritt 1. Verifikation: silencedetect-Pausenpositionen Concat vs. Final müssen auf ±30 ms übereinstimmen.
 - **`loudnorm` nach `amix` streckt Audio** (One-Pass-Modus, interne 192-kHz-Timestamps): Ergebnis war +0,8 s Länge und wandernder Sync. Deshalb linear mastern (oben Schritt 4).
 - **Whisper-Onsets:** nach Pausen/Schnitten oft 0,2–0,3 s zu FRÜH, bei Plosiven bis 0,2 s zu SPÄT, einzelne Wörter bis 0,5 s verschoben. Bei jedem gemeldeten Sync-Problem die RMS-Hüllkurve messen statt Whisper zu glauben (Onset-Audit in `render-technik.md`).
-- Video- vs. Audio-Streamdauer der Lieferdatei > 0,1 s auseinander = Alarm, nicht liefern.
+- **`loudnorm` im Mix-Filtergraph schneidet das ENDE ab:** `[a]loudnorm=…` direkt vor `amix` lieferte eine Tonspur, die 2,9 s kürzer war als das Bild — der Kunde hörte „die Musik endet zu früh", und fünf Versionen lang wurde am Fade gedreht statt gemessen. Spiegelbild der Streck-Falle darüber: dasselbe Filter, andere Richtung. Konsequenz gilt für beide: `loudnorm` nie im finalen Filtergraph. Stems als WAV exakt auf die Bildlänge padden (`apad,atrim=0:<dauer>`), `ebur128` messen, `volume=(Ziel − I) dB`, dann `amix` + Limiter (so macht es `scripts/montage_render.py`).
+- Video- vs. Audio-Streamdauer der Lieferdatei > 0,1 s auseinander = Alarm, nicht liefern. **Vor jeder Lieferung beide Dauern per `ffprobe` vergleichen — nicht nur, wenn jemand ein Ton-Problem meldet.**
 
 ## Fremdmaterial im Mix (Reaction-/Quellclips)
 
@@ -72,3 +73,9 @@ sondern ein Alarm** — meist ist die falsche Audiospur gemappt.
 - Vorgehen: Hüllkurve messen, Stille wegschneiden, Datei auf den hörbaren Kern kürzen und den
   PEAK auf das Ziel-Event legen (bei Whoosh: Peak auf den Schnitt, Start entsprechend davor).
   Nach dem Render maschinell gegenprüfen (Soll-Event vs. gemessener Peak ≤ 40 ms).
+
+## Musikbett bei Clip-Montagen (ohne Sprache)
+
+- Musik ist hier die Hauptspur, nicht das Bett: −16,5 LUFS, Originalton (Schritte, Türen, Stimmen) als Ambiente −24 LUFS, danach linear auf −14 LUFS mastern (Schritt 4 der Master-Kette). Ganz stummer Originalton wirkt wie ein Werbespot; −30 LUFS war dem Kunden zu leise („man hört keine Stimmen").
+- Musik ab Frame 0 auf vollem Pegel (Offset auf den Beat-Einsatz, nie ins Intro) und bis zum letzten Frame ohne Fade — das Reel loopt. Kein `afade` am Ende, kein Bild-Fade.
+- Nie den Ton eines Vorlagen-Reels verwenden (komprimiert, Fremdstimmen). Original vom Kunden, Liedstelle per `scripts/montage_beatgrid.py align` treffen. Details: `clip-montage.md`.

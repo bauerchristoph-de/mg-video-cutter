@@ -5,6 +5,7 @@
 - **Talking-Head/Webinar-Clip (60–120 s):** Hook in den ersten 3 s (stärkste Aussage, nie Intro-Floskeln) → Kernaussagen mit Emphasis-Momenten → CTA. Füllwörter, Versprecher, „ähm", doppelte Ansätze rausschneiden — aber Atmung und natürliche Pausen LASSEN, sonst wirkt es gehetzt.
 - **Zoomstufen-Wechsel alle 3–5 s** an Satzgrenzen (100 ↔ 112 ↔ 125 %). Der Wechsel ersetzt den B-Roll-Cut, den Talking-Head-Material nicht hergibt.
 - **Action-/Event-Material (9:16, 75–90 s):** Hook 0–5 s aus 4–6 schnellen Action-Beats (kein Slow-Mo am Anfang) → Titel auf Musik-Drop → O-Töne mit Bauchbinden → emotionaler Höhepunkt auf Drop → Abbinder. Referenz-Tempo: Median-Shot ~1,5 s.
+- **Clip-Montage mit Musik (9:16, 20–25 s, keine Sprache):** Beats statt Sekunden — 3 Beats je Clip, 4 mit Kommentar, Finale 6–7; Segment = die letzten N Sekunden des Clips; harte Schnitte, Push-in 100→105 %, kein Fade am Ende. Vollständig in `clip-montage.md`.
 - Pausen zwischen Aussagen: knapp, aber verständlich — Sprechpausen auf ~0,3–0,5 s kürzen, nie auf 0.
 
 ## Schnittpunkte (die wichtigste Regel des ganzen Systems)
@@ -83,4 +84,5 @@ Im Briefing wird das Ziel festgelegt — die Ausspielungen unterscheiden sich sy
 
 - BPM + Beatgrid messen (librosa), Hits/Stille/Drops per RMS im 0,1-s-Raster — **nie nach Gehör timen**. Cuts auf Beat, Titel auf Drop.
 - Musik 18–25 dB unter Sprache mit 0,4-s-Rampen; unter Jubel/Action höher. Clips mit eigener Musik muten.
-- Nur lizenziertes Material (Envato/Artlist). Keine Trending-Sounds, wenn Dritte teilen sollen.
+- Nur lizenziertes Material (Envato/Artlist). Keine Trending-Sounds, wenn Dritte teilen sollen. Bei Clip-Montagen für den eigenen Kanal entscheidet der Kunde (eingebrannt vs. Sound in der App) — `clip-montage.md`.
+- Musik-Offset auf den Beat-Einsatz, nie ins leise Intro; Musik läuft bis zum letzten Frame. Beat-Raster und Liedstelle: `scripts/montage_beatgrid.py`.
