@@ -1,0 +1,17 @@
+{
+  "_hinweis": "Clip-Montage mit Musik (references/clip-montage.md). Pro Video nur diese Datei. Dauern und audio_offset schreibt montage_beatgrid.py plan.",
+  "src_dir": "rohmaterial/",
+  "musik": "musik/song.m4a",
+  "audio_offset": 0.0,
+  "lautheit": {"musik": -16.5, "ambiente": -24},
+  "fonts": {"titel": "assets/Montserrat-ExtraBold.ttf", "name": "assets/Montserrat-SemiBold.ttf", "kommentar": "assets/Montserrat-Medium.ttf"},
+  "titel": {"zeilen": ["Wer kommt wann", "zum Training?"], "akzent": "wann", "groesse": 52, "y": 1130},
+  "bauchbinde": {"y": 1290, "groesse": 54, "kommentar_groesse": 34, "max_breite": 940},
+  "output": "fertig/montage_v1",
+  "slides": [
+    {"id": "01_coach", "src": "IMG_2265", "name": "Coach", "zeit": "18:42", "kommentar": "– war schon vor der Kamera da", "start": 1.9, "beats": 4, "titel": true},
+    {"id": "02_ad", "src": "IMG_2264", "name": "AD", "zeit": "18:24", "kommentar": "(kam direkt vom anderen Training)", "beats": 4},
+    {"id": "03_max", "src": "IMG_2268", "name": "Max", "zeit": "18:53", "beats": 3},
+    {"id": "04_finale", "src": "IMG_2273", "name": "Christoph & Sven", "zeit": "19:09", "kommentar": "(Treffpunkt: 19:15 Uhr)", "beats": 7}
+  ]
+}
