@@ -22,7 +22,7 @@ Formatvorgaben. **Die Config gehört immer mit dazu.**
 
 | # | Parameter | Sollwert | Messung | Bei Abweichung |
 |---|---|---|---|---|
-| 1 | A/V-Dauer | Δ < 0,1 s | `ffprobe` beide Streams | Stopp |
+| 1 | A/V-Dauer | Δ < 0,1 s | `ffprobe` beide Streams — bei JEDER Version messen, nicht erst nach einer Ton-Beschwerde (Realfall: Ton 2,9 s kürzer als Bild durch `loudnorm` im Filtergraph, fünf Runden unbemerkt) | Stopp |
 | 2 | Freeze-Scan | 0 Treffer | `freezedetect=n=-60dB:d=0.5` | Stopp |
 | 3 | Loudness | −14 LUFS ±0,5 | `ebur128` | Auto-Korrektur |
 | 4 | True Peak | ≤ −1,2 dBTP | `ebur128 peak=true` | Auto-Korrektur |

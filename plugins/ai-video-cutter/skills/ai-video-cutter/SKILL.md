@@ -1,6 +1,6 @@
 ---
 name: ai-video-cutter
-description: Verwandelt Rohvideos (Talking-Head, Interviews, Event-Material) in fertige Social-Media-Videos — geschnitten, mit Karaoke-Untertiteln und animierten Emphasis-Captions im eigenen CI, Zoom-Rhythmus, Sound-Effekten und gemastertem Ton. IMMER verwenden, wenn ein Video geschnitten, gekürzt, untertitelt oder für Social Media aufbereitet werden soll — auch bei Formulierungen wie „mach mir ein Reel daraus", „Video für Instagram/LinkedIn", „Untertitel drauf", „schneid das zusammen", „aus dem Webinar einen Clip", oder wenn einfach eine Videodatei mit dem Wunsch nach einem fertigen Ergebnis übergeben wird. Beim ersten Einsatz für einen neuen Kunden zuerst das Setup-Interview führen (references/setup-interview.md).
+description: Verwandelt Rohvideos (Talking-Head, Interviews, Event-Material, Clip-Montagen mit Musik) in fertige Social-Media-Videos — geschnitten, mit Karaoke-Untertiteln und animierten Emphasis-Captions im eigenen CI, Zoom-Rhythmus, Sound-Effekten und gemastertem Ton; Trend-Reels aus Handyclips mit Beat-Schnitt und IG-nativen Einblendungen. IMMER verwenden, wenn ein Video geschnitten, gekürzt, untertitelt oder für Social Media aufbereitet werden soll — auch bei Formulierungen wie „mach mir ein Reel daraus", „Video für Instagram/LinkedIn", „Untertitel drauf", „schneid das zusammen", „aus dem Webinar einen Clip", oder wenn einfach eine Videodatei mit dem Wunsch nach einem fertigen Ergebnis übergeben wird. Beim ersten Einsatz für einen neuen Kunden zuerst das Setup-Interview führen (references/setup-interview.md).
 ---
 
 # AI Video-Cutter
@@ -46,6 +46,7 @@ darüber hinaus wird gezielt nachgeschlagen — nicht vorsorglich gelesen.
 8. `references/animation-kurven.md` — die Kurven und Frame-Werte als Zahlen (Overshoot, Peak-Lage, Rundung, Skalierung).
 9. `references/render-technik.md` — Render-Architektur und Pflicht-QC (erst vor dem Bauen nötig).
 10. `references/qc-parameter.md` — die vollständige Parameterliste der Qualitätskontrolle (erst vor der Lieferung nötig, dann aber komplett).
+11. **Nur bei Clip-Montagen ohne Sprache** (Handyclips + Musik, „so ein Reel wie das hier"): `references/clip-montage.md` — ersetzt Captions/Hooks/Transkript durch Beat-Schnitt und IG-native Einblendungen, eigene Skripte `scripts/montage_*.py`.
 
 **Standards-Echo (Pflicht):** Vor dem ersten Render eines Videos in 5–8 Stichpunkten auflisten,
 welche Standards aus den References angewendet werden (Untertitel-Werte, Position, Kontrast-Maßnahme,
@@ -63,6 +64,8 @@ Setup-Interview → `kunden-config.yaml` (CI-Farben, Fonts, Logo, Kanäle, Ton-I
 
 ### 1 · Briefing (pro Video, 2 Minuten)
 Klären, bevor irgendwas gerendert wird: Ziel des Videos (organisch / Ad / beides), Ziellänge, Plattform + Format (9:16 / 16:9 / 1:1), was ist die Kernbotschaft, gibt es einen CTA. Eine kurze Rückfrage-Runde — nicht zehn.
+
+**Abzweig Clip-Montage:** Hat das Material keine Sprache (mehrere kurze Clips, ein Song, kurze Einblendungen), gilt ab hier der Ablauf in `references/clip-montage.md` — Briefing → Beat-Raster → Montage-Plan → Overlays → Render → Framesheet → QC. Die Freigabe-Logik (Schritt 3, 5, 6, 8) bleibt gleich.
 
 ### 2 · Transkript + Analyse
 Audio extrahieren, mit Whisper transkribieren (`word_timestamps=True`, Modell medium, `vad_filter=False`). Wort-Timings sind das Rückgrat von allem — aber Whisper hat bekannte Fehler, die korrigiert werden müssen (Bindestrich-Tokens, verschobene Onsets nach Pausen; Details in `references/audio.md` und `references/render-technik.md`).
@@ -112,7 +115,7 @@ plus die beiden Zahlen-Gates (die brauchen keine Config); es fehlen dann Glossar
 Pflichtphrasen, CTA-Kanaltreue, Sprechtempo und Formatvorgaben — also genau die Prüfungen,
 die kundenspezifisch wehtun.
 
-Technik: A/V-Dauer < 0,1 s · Freeze-Scan = 0 · −14 LUFS ±0,5 · True Peak ≤ −1,2 dB ·
+Technik: A/V-Dauer < 0,1 s (bei JEDER Version messen — eine 2,9-s-Lücke blieb einmal fünf Runden unbemerkt) · Freeze-Scan = 0 · −14 LUFS ±0,5 · True Peak ≤ −1,2 dB ·
 Fremdquellen ≤ 2 dB Differenz · Auflösung und Laufzeit laut Format.
 
 Schnitt: **kein Schnitt auf Sprache** (`pausen_scan.py --plan`, Exit 1 = nicht
@@ -167,5 +170,5 @@ Alle Korrekturen der Feedbackrunden kategorisieren: kundenspezifisch → `kunden
 ## Grenzen
 
 - Kein Ersatz für fehlendes Material: Aus schlechtem Rohvideo (unverständlicher Ton, Dauerwackeln) wird kein gutes Reel — dann ehrlich sagen, was fehlt.
-- Musik-Einbindung nur mit lizenziertem Material des Kunden (Envato o. ä.); keine Trending-Sounds, wenn Dritte das Video teilen sollen.
+- Musik-Einbindung nur mit lizenziertem Material des Kunden (Envato o. ä.); keine Trending-Sounds, wenn Dritte das Video teilen sollen. Bei Clip-Montagen für den eigenen Kanal entscheidet der Kunde (Song eingebrannt oder Sound in der App) — `references/clip-montage.md`.
 - Rechenzeit: ~2–5 Minuten Renderzeit pro Videominute je nach Rechner — bei Iterationen einplanen.
