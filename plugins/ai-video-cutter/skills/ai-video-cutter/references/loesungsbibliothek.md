@@ -23,6 +23,8 @@ alles Weitere wird über diese Tabellen gezielt nachgeschlagen.
 | „Erstes Video für diesen Kunden" | `setup-interview.md` + `marken-analyse.md` | ohne Config und Markenprofil wird nicht gebaut |
 | „Und ein Post-Text dazu" | `begleit-content.md` | nur was in der Config aktiviert ist |
 | „Event-Zusammenschnitt" | `schnitt-regeln.md` → Action-Material | Median-Shot ~1,5 s, jeder Clip nur einmal |
+| „So ein Reel wie das hier, nur für uns" (Clips + Trendsound, keine Sprache) | `clip-montage.md` | IG-Look: weiß, Glow statt Kasten, 3 Beats je Clip, Musik ab Frame 0 — `montage_*.py` |
+| „Wer kommt wann / POV / unser Team in 20 Sekunden" | `clip-montage.md` | Bauchbinde „Name – Uhrzeit", Kommentare nur aus Kundenfakten |
 
 ---
 
@@ -44,6 +46,10 @@ alles Weitere wird über diese Tabellen gezielt nachgeschlagen.
 | Eigener Sprecher ist die leiseste Stimme im Video | Fremdquellen nicht pro Quelle gemessen und angeglichen | `audio.md` → Fremdmaterial |
 | Klack an Segmentgrenzen | 8-ms-Kantenfade fehlt | `audio.md` → Segment-Ebene |
 | Audio ist am Ende länger als das Video | `loudnorm` nach `amix` (One-Pass streckt) | `audio.md` → bekannte Fallen |
+| Musik endet vor dem Bild / Ton kürzer als Video | `loudnorm` im Mix-Filtergraph schneidet das Ende ab — Stem-Mix, A/V-Dauer prüfen | `audio.md` → bekannte Fallen, `scripts/montage_render.py` |
+| „Musik dreht langsam hoch" | Offset liegt im leisen Intro des Songs | `clip-montage.md` → Musik (Offset = Beat-Einsatz) |
+| Fremde Stimmen in der Musik | Ton aus dem Vorlagen-Reel statt Original | `clip-montage.md` → Musik, `montage_beatgrid.py align` |
+| Titelkasten verdeckt einen Kopf / Text „zu groß, zu bunt" | Projektfilm-Look in einer Clip-Montage | `clip-montage.md` → Look (weiß, Glow, Titel über der ersten Bauchbinde) |
 | SFX liegt hörbar neben dem Schnitt | Kunden-SFX-Datei ungeprüft übernommen (Stille am Anfang) | `audio.md` → Kunden-SFX-Dateien |
 | Jump-Cut „hakt" trotz Blende | Blenden kaschieren Jump-Cuts nicht — Punch-in nutzen | `schnitt-regeln.md` |
 | Kunde erkennt wiederholte Clips | dHash-Wiederholungs-QC nicht gelaufen | `schnitt-regeln.md` → Wiederholungen |
@@ -79,6 +85,9 @@ und Konsequenz)
 **Kundenwissen** → `setup-interview.md`, `marken-analyse.md`,
 `learnings-system.md`
 
+**Clip-Montage mit Musik** → `clip-montage.md` (Look, Tempo in Beats, Musik-Regeln,
+Feedback-Kaskade) · Werkzeuge `scripts/montage_*.py`
+
 **Begleittexte** → `begleit-content.md`
 
 ---
@@ -93,6 +102,9 @@ und Konsequenz)
 | `scripts/build.py` | Overlays, Karten, Emphasis-Sequenzen, `events.json` | Build |
 | `scripts/make_sfx.py --check` | SFX-Spur bauen, Peak-Lage gegen die Events messen | Build |
 | `scripts/qc.py` | alle Gates, Exit-Code 1 = nicht ausliefern | vor Lieferung |
+| `scripts/montage_beatgrid.py beats / align / plan` | Beat-Raster, Liedstelle der Vorlage, Beat-Dauern in den Plan | Clip-Montage, vor dem Build |
+| `scripts/montage_build.py` | Overlays im IG-Look aus Kunden-Config + Montage-Plan | Clip-Montage, Build |
+| `scripts/montage_render.py` | Segmente, Concat, Stem-Mix ohne loudnorm, A/V-QC | Clip-Montage, Render |
 | `ffmpeg -af loudnorm=print_format=json` | Lautheit und Gating-Schwelle messen | Analyse, Master |
 | `ffmpeg -vf signalstats` | Luma/Sättigung des Materials | Analyse, Grading-Frage |
 | `ffmpeg -vf freezedetect` | Standbilder finden | nach JEDEM Render |

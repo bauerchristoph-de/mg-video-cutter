@@ -76,11 +76,38 @@ python3 qc.py --video final.mp4 --build build/ --plan cut-plan.json
 | Peak-Lage der SFX | `make_sfx.py --check` | Effekt liegt hörbar neben dem Schnitt |
 | 8 Gates + Kontaktbogen | `qc.py` | Auslieferung mit erkennbarem Fehler |
 
+## Clip-Montage mit Musik (zweiter Auftragstyp, `references/clip-montage.md`)
+
+Keine Sprache, kein Transkript — dafür Beats. Pro Video nur `montage-plan.json`
+(Vorlage: `montage-plan.example.json`).
+
+```bash
+# 1 · Beat-Raster des ORIGINAL-Songs (nie der Ton des Vorlagen-Reels)
+python3 montage_beatgrid.py beats musik/song.m4a            # -> musik/beats.npy, meldet den Beat-Einsatz
+python3 montage_beatgrid.py align vorlage.mp4 musik/song.m4a # optional: dieselbe Liedstelle wie die Vorlage
+
+# 2 · Beats je Slide -> Dauern + audio_offset in den Plan
+python3 montage_beatgrid.py plan montage-plan.json musik/beats.npy --k0 18
+
+# 3 · Overlays (weiß, Glow, Akzentwort aus ci.farben.akzent, Fonts aus ci.fonts.dateien)
+python3 montage_build.py --config kunden-config.yaml --plan montage-plan.json
+
+# 4 · Segmente, Concat, Stem-Mix, Master + Web; Exit-Code 1 wenn Ton ≠ Bild
+python3 montage_render.py --plan montage-plan.json
+```
+
+| Prüfung | Wo | Verhindert |
+|---|---|---|
+| Ton exakt so lang wie Bild | `montage_render.py` (Exit 1) | „Musik endet zu früh" (loudnorm-Falle) |
+| Fonts/Akzentfarbe nur aus Config oder Plan | `montage_build.py` (Abbruch) | geratene CI |
+| Dauern nur aus dem Beat-Raster | `montage_beatgrid.py plan` | Schnitte neben dem Beat |
+
 ## Abhängigkeiten
 
 `pillow`, `pyyaml`, `ffmpeg`/`ffprobe` im Pfad.
 Fehlt PyYAML: `pip install pyyaml --break-system-packages`
 `pausen_scan.py` braucht nur ffmpeg/ffprobe — kein numpy, kein PyYAML.
+`montage_beatgrid.py` braucht numpy, für `beats` zusätzlich librosa (`pip install librosa --break-system-packages`).
 
 ## Performance
 

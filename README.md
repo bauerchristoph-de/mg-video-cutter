@@ -20,6 +20,7 @@ Das Plugin führt durch das Setup: CI, Kanäle, Marken-Analyse (Website + Social
 
 ## Changelog
 
+- **0.10.0** (15.09.2026) — Zweiter Auftragstyp „Clip-Montage mit Musik" (Trend-Reels aus Handyclips ohne Sprache): neue Reference `clip-montage.md` mit Look, Beat-Tempo, Musik-Regeln und Feedback-Kaskade; Skripte `montage_beatgrid.py` (Beat-Raster, Liedstelle der Vorlage, Beat-Dauern), `montage_build.py` (IG-native Overlays aus der Kunden-Config), `montage_render.py` (Stem-Mix ohne loudnorm, A/V-Gate). Neue Ton-Falle dokumentiert: `loudnorm` im Mix-Filtergraph schneidet das Ende der Tonspur ab.
 - **0.9.0** (02.09.2026) — Der Skill steht wieder vollständig auf der eigenen ffmpeg-Pipeline: die optionale zweite Render-Engine ist entfernt, alle Regeln und Werte gelten unverändert weiter.
 - **0.8.0** (02.09.2026) — Neues Gate für die wichtigste Regel des Systems: `pausen_scan.py` misst die Sprechpausen adaptiv (Rauschschwelle aus dem Material statt Konstante) und prüft jeden geplanten Schnitt dagegen — verschluckte Silben fallen jetzt vor dem Build auf, nicht beim Ansehen. Neue Referenzen: `animation-kurven.md` (alle Animationswerte als prüfbare Zahlen statt Prosa — Overshoot, Peak-Lage, Frame-Rundung, wahrnehmungsgerechte Skalierung), `loesungsbibliothek.md` (Einstieg über den Fall statt über die Dateiliste). QC erweitert um Abschnitt D (Gates 21–23).
 - **0.4.1** (24.08.2026) — Interop: geteilter Kundenordner mit dem AI Post-Generator (kunden-config.yaml, marken-profil.md, assets/, fertig/).
