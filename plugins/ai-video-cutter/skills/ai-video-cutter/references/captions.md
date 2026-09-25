@@ -7,7 +7,7 @@ Alle Farben/Fonts/Positionen kommen aus der `kunden-config.yaml`. Nie hart kodie
 ## Presets
 
 ### 1 · `karaoke` — Standard-Zeile
-Wort-für-Wort-Highlight: weiße Zeile (Standard-Font Bold), aktuelles Wort auf Akzent-Chip (abgerundetes Rechteck). Max. 4 Wörter / ~26–30 Zeichen pro Zeile, Umbruch bevorzugt an Satzzeichen, zusammengesetzte Wörter nie trennen. Weicher Schatten (Gaussian Blur) hinter der Zeile für Lesbarkeit auf jedem Hintergrund.
+Wort-für-Wort-Highlight: weiße Zeile (Standard-Font Bold), aktuelles Wort auf Akzent-Chip (abgerundetes Rechteck). Max. 4 Wörter / ~26–30 Zeichen pro Zeile, Umbruch bevorzugt an Satzzeichen, zusammengesetzte Wörter nie trennen. Schicht-Schatten (Kontakt-Halo + weicher Fernschatten, Werte unten) hinter der Zeile für Lesbarkeit auf jedem Hintergrund — auch auf Weiß, ohne harte Kontur.
 
 **Timing-Regeln (alle sind Pflicht, jede hat einen sichtbaren Fehler verhindert):**
 - Wort-Timings aus Whisper (`word_timestamps=True`), danach Nachbearbeitung: Bindestrich-Tokens zum Vorgänger mergen; Onset-Audit gegen die RMS-Hüllkurve (siehe `render-technik.md`).
@@ -73,16 +73,36 @@ Default für jede Karaoke-Zeile (Farben kommen weiter aus der Kunden-Config):
 |---|---|
 | Schriftschnitt | der SCHWERSTE verfügbare Schnitt (ExtraBold/Black), nie Bold wenn schwerer existiert |
 | Textfarbe | Off-White `#F0F0F0` (nie reines Weiß) |
-| Kontur | KEINE (max. 1 px, nur wenn Kunden-CI es verlangt) |
-| Schatten | Gaussian Blur 7, Alpha 0,72, Offset dy 4 — deutlich sichtbar |
+| Kontur | KEINE harte Kontur (`outline: 0`). Kunden-Feedback 25.09.2026: 5-px-Kontur = „fette Kontur", abgelehnt |
+| Schatten | **Schicht-Schatten (seit 0.11, Default in `build.py`)**: 1) Fernschatten: Maske +2 px geweitet, Blur 22, Alpha 0,80, dy 6 · 2) Kontakt-Halo: Maske +4 px geweitet, Blur 4, Alpha 1,0, dy 1 |
 | Chip (aktives Wort) | Padding 13/7 px, Radius 11, exakt auf der Ink-Box |
 | Wörter pro Karte | max. 3 |
 | Zeilenbreite | max. 860 px im 1080er-Raster — nie fast volle Bildbreite |
 
 **Chip-Ausrichtung: Ink-Box, nicht Ascender-Box.** Die Ascender-Box enthält Leerraum über den
 Versalien — daran ausgerichtet sitzt der Chip systematisch zu hoch und die Schrift wirkt nicht mittig.
-Ink-Box einmal mit Referenzstring („Hg“) messen und für ALLE Wörter identisch verwenden,
-sonst springen die Chips beim Wortwechsel.
+Ink-Box einmal mit Referenzstring **„H“ (Versalhöhe: Oberkante H bis Grundlinie)** messen und für
+ALLE Wörter identisch verwenden, sonst springen die Chips beim Wortwechsel. Nicht „Hg": die
+Unterlänge zieht den Chip nach unten, die Schrift wirkt im Chip nach oben verrutscht
+(Kunden-Feedback 25.09.2026: „die Markierung hängt immer unten dran").
+
+### Warum Schicht-Schatten (Lesbarkeit auf Weiß ohne Kontur)
+
+Recherche 25.09.2026 (Blitzcut, Syllaby, Matinée, Derek Lieu, OpenClip, Jon Loomer): Branchenstandard
+ist „weiße Schrift + dünne schwarze Kontur ODER Schatten"; ein **einzelner** weicher Versatz-Schatten
+(Blur 2–9, Alpha ≤ 0,8) versagt auf hellem Grund, weil er sich zu dünn über die Fläche verteilt
+(Blitzcut: „never rely on shadow alone"). Creator-Presets lösen das mit **100 % Deckkraft + hoher
+Weichzeichnung** (Loomer/CapCut: Opacity 100 %, Blur 65 %). Unsere Umsetzung ohne sichtbare Kontur:
+
+1. **Kontakt-Halo:** Glyphen-Maske per MaxFilter um ~6 % der Schriftgröße weiten (spread 4 bei 62 px),
+   dann nur leicht weichzeichnen (Blur 4), Deckkraft 100 %. Ergebnis: dunkler, weicher Rand direkt
+   am Buchstaben — trägt die Lesbarkeit auf Weiß, wirkt aber nicht wie eine gezeichnete Kontur.
+2. **Fernschatten:** breit (Blur ~35 % der Schriftgröße), 80 %, dy 6 — gibt Tiefe und beruhigt
+   unruhige Hintergründe.
+
+`build.py`: `shadow` akzeptiert ein dict (eine Ebene) oder eine Liste (Ebenen, unten zuerst),
+Felder `radius`, `alpha`, `dy`, `dx`, `spread`. Abnahme-Test: Zeile auf dem hellsten B-Roll-Frame
+des Videos rendern und bei 100 % ansehen.
 
 **Gemessen wird mit exakt denselben Textparametern wie gerendert** — inklusive
 `letterSpacing` bzw. Laufweite. Wird beim Messen ein Parameter weggelassen, der
@@ -110,7 +130,9 @@ Der häufigste Totalschaden: helle Untertitel auf hellem Hintergrund (weißes He
       (z. B. tiefer, wenn unten dunkler Boden/Kleidung ist).
    b) **Ganzzeilen-Scrim:** dunkler halbtransparenter Chip hinter der GESAMTEN Zeile
       (Schwarz, Alpha 0,35–0,5, gleiche Radius-Logik wie der Wort-Chip) — nicht nur hinter dem Emphasis-Wort.
-   c) Schatten verstärken (Blur 9–10, Alpha 0,85) — nur als Ergänzung, ersetzt a/b nicht.
+   c) **Schicht-Schatten mit Kontakt-Halo** (Default seit 0.11, s. oben) — reicht bei weißem Grund
+      ohne Scrim; das QC-Gate „Lesbarkeit" akzeptiert ihn (Halo-Ebene mit spread ≥ 3 und Alpha ≥ 0,9).
+      Harte Kontur nur, wenn die Kunden-CI sie ausdrücklich verlangt.
 4. **Konstanz:** Die gewählte Lösung gilt für das GANZE Video — Position und Stil der Zeile
    springen nicht von Karte zu Karte.
 
