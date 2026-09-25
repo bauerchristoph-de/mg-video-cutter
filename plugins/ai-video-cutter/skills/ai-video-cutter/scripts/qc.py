@@ -141,6 +141,12 @@ def main():
     band_y = br["band_y"]
     lh = br["style_used"]["karaoke"]["line_height"]
     scrim_alpha = br["style_used"]["karaoke"].get("scrim", {}).get("alpha", 0)
+    # Schicht-Schatten mit dichtem Kontakt-Halo (spread >= 3, alpha >= 0.9) oder Kontur >= 2 px
+    # tragen die Lesbarkeit auf hellem Grund ebenfalls (seit 0.11, s. captions.md).
+    _shl = br["style_used"]["karaoke"].get("shadow", [])
+    _shl = _shl if isinstance(_shl, list) else [_shl]
+    halo = any(l.get("spread", 0) >= 3 and l.get("alpha", 0) >= 0.9 for l in _shl) \
+        or br["style_used"]["karaoke"].get("outline", 0) >= 2
 
     cfg = load_config(a.config)
     emph_lines = (br.get("emphasis") or {}).get("lines", [])
@@ -212,10 +218,11 @@ def main():
                 bright += 1
     if probes:
         avg = sum(y for _, y in probes) / len(probes)
-        ok = bright == 0 or scrim_alpha > 0
+        ok = bright == 0 or scrim_alpha > 0 or halo
         gate("Lesbarkeit", ok,
              f"Textzone Ø {avg:.0f} · {bright}/{len(probes)} hell" +
-             (f" · Scrim aktiv ({scrim_alpha})" if scrim_alpha else " · KEIN Scrim"))
+             (f" · Scrim aktiv ({scrim_alpha})" if scrim_alpha else
+              " · Kontakt-Halo aktiv" if halo else " · KEIN Scrim/Halo"))
 
     # 7 --------------------------------------------------- SFX-Peaks
     ev_path = os.path.join(a.build, "events.json")

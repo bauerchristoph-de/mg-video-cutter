@@ -32,3 +32,20 @@ liegt im 9:16-Crop mitten auf dem Gesicht.
   2–3 Varianten zur Wahl gestellt — nie ungefragt eine „neutrale" Formulierung setzen.
 - Frage-Hooks und offene Loops schlagen Aussagen; konkrete Zahl schlägt runde Formulierung.
 - Kunden-Hook-Templates (falls im Kundenordner vorhanden) sind verbindliche Presets.
+
+## Serien-Teaser & CTA am Ende (Learnings 25.09.2026)
+
+Kunden-Feedback: ein nacktes „TEIL 2" am Ende ist zu wenig — der Zuschauer braucht eine Handlung.
+Recherche (fluxnote, influencers-time, clipcreator): Serien-CTA mit **Handlung + konkretem Nutzen**
+schlägt generisches „Folge mir"; in den letzten 3–5 s; 5–7 Wörter; als Text (läuft stumm).
+
+- **Formel:** `FOLGE FÜR TEIL <n>: <Thema des nächsten Teils>` — Chip auf **FOLGE** (die Handlung),
+  z. B. „FOLGE FÜR TEIL 2: AUS GIPS WIRD 3D".
+- **Einsatz** mit dem letzten gesprochenen Überleitungssatz („Das zeige ich euch jetzt auch"),
+  Stil und Position wie der Hook (oben, gleiche Typografie).
+- **Outro-Vorschau:** 1–2 s stummes B-Roll aus dem NÄCHSTEN Teil unter dem CTA (Musik im Outro
+  +6…9 dB hochziehen), damit der CTA ≥ 2 s stehen bleibt, ohne dass die Person schweigend in die
+  Kamera schaut.
+- Der nächste Teil beantwortet den offenen Loop in den ersten 5 s und bringt in den ersten 3 s
+  Kontext („Teil 2 · Implantat-Serie"), damit er auch allein funktioniert.
+
