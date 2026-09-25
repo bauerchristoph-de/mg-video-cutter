@@ -7,6 +7,15 @@
 - **Action-/Event-Material (9:16, 75–90 s):** Hook 0–5 s aus 4–6 schnellen Action-Beats (kein Slow-Mo am Anfang) → Titel auf Musik-Drop → O-Töne mit Bauchbinden → emotionaler Höhepunkt auf Drop → Abbinder. Referenz-Tempo: Median-Shot ~1,5 s.
 - **Clip-Montage mit Musik (9:16, 20–25 s, keine Sprache):** Beats statt Sekunden — 3 Beats je Clip, 4 mit Kommentar, Finale 6–7; Segment = die letzten N Sekunden des Clips; harte Schnitte, Push-in 100→105 %, kein Fade am Ende. Vollständig in `clip-montage.md`.
 - Pausen zwischen Aussagen: knapp, aber verständlich — Sprechpausen auf ~0,3–0,5 s kürzen, nie auf 0.
+- **Pausen MITTEN im Satz** (Gedanke läuft weiter, z. B. nach „…implantatgetragener Zahnersatz ⏸ hergestellt wird"): komplett raus, Restlücke ≤ 0,15 s. Kunden-Feedback 25.09.2026 (zweimal reklamiert): eine Denkpause mitten im Satz fällt sofort auf, eine Satzpause nicht. Die Schnittpunkte trotzdem mit der Energie-Hüllkurve prüfen (10-ms-RMS, Schwelle Rauschboden + 9 dB), weil das `pausen_scan.py`-Mindestmaß hier bewusst unterschritten wird.
+
+## B-Roll im Talking-Head (Learnings 25.09.2026, Recherche captions.ai, creatorflow, Pireel, Blitzcut)
+
+- **Die ersten ~3 s gehören dem Gesicht.** Der Hook wird von der Person getragen (Vertrauen, Stimme, Blick in die Kamera); das erste B-Roll kommt frühestens, wenn der Hook-Satz steht. Kunden-Feedback: „am Anfang arg viel B-Roll … nicht nur B-Roll die ganze Zeit".
+- **Max. 2 B-Rolls am Stück**, danach zurück aufs Gesicht — spätestens bei der nächsten Aussage über Person/Erfahrung/Versprechen.
+- **Anteil 30–40 %** der Laufzeit (Richtwert 60/40 A/B aus Talking-Head-Tutorials); B-Roll-Shot 1–3 s (Detail) bzw. 2–5 s (Übersicht).
+- **B-Roll zeigt, was gerade gesagt wird** (Wort-Bild-Deckung) — nie Aktivität um der Aktivität willen. Gesicht bleibt bei Emotion, Pointe, Emphasis-Moment.
+- Prüfen: B-Roll-Anteil und längste B-Roll-Kette aus der Shot-Liste ausrechnen, bevor gerendert wird.
 
 ## Schnittpunkte (die wichtigste Regel des ganzen Systems)
 
