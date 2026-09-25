@@ -48,20 +48,23 @@ DEFAULTS = {
         "gap_fill": 0.25,         # kleinere Lücken werden geschlossen
         "tail": 0.15,             # Nachlauf letztes Wort
         "chip": {"pad_x": 13, "pad_y": 7, "radius": 11},
-        "shadow": {"radius": 7, "alpha": 0.72, "dy": 4},
-        "outline": 0,             # KEINE Kontur (max. 1 px, nur wenn CI es fordert)
+        "shadow": [{"radius": 22, "alpha": 0.80, "dy": 6, "spread": 2},   # Fernschatten
+                   {"radius": 4, "alpha": 1.00, "dy": 1, "spread": 4}],  # Kontakt-Halo
+        "outline": 0,             # KEINE harte Kontur – Lesbarkeit kommt aus dem Schicht-Schatten
         "scrim": {"alpha": 0.0, "radius": 14, "pad_x": 22, "pad_y": 10},
     },
     "emphasis": {
         "size": 96, "line_height": 112,
         "pop": 0.20, "overshoot": 1.08, "exit": 0.15,
         "drift": 0.018, "glow_blur": 26, "glow_dur": 0.35,
-        "shadow": {"radius": 9, "alpha": 0.78, "dy": 5},
+        "shadow": [{"radius": 28, "alpha": 0.80, "dy": 7, "spread": 3},
+                   {"radius": 5, "alpha": 1.00, "dy": 1, "spread": 5}],
         "margin": 0.35,           # Suchfenster für die Wort-Zuordnung
     },
     "hook": {
         "size": 74, "line_height": 96, "pop": 0.22,
-        "shadow": {"radius": 9, "alpha": 0.80, "dy": 5},
+        "shadow": [{"radius": 24, "alpha": 0.80, "dy": 6, "spread": 2},
+                   {"radius": 4, "alpha": 1.00, "dy": 1, "spread": 4}],
         "chip": {"pad_x": 15, "pad_y": 8, "radius": 12},
     },
 }
@@ -107,23 +110,42 @@ MEASURE = ImageDraw.Draw(Image.new("RGBA", (8, 8)))
 
 
 def ink_band(font):
-    """Ober-/Unterkante der tatsächlichen Schriftfläche ('Hg').
+    """Ober-/Unterkante der tatsächlichen Schriftfläche ('H' = Versalhöhe).
 
     NICHT die Ascender-Box verwenden: die enthält Leerraum über den Versalien,
     dadurch sitzt jeder Chip systematisch zu hoch. Einmal gemessen und für ALLE
     Wörter identisch benutzt, sonst springen die Chips beim Wortwechsel.
     """
-    b = MEASURE.textbbox((0, 0), "Hg", font=font)
+    # Versalhöhe (Oberkante H bis Grundlinie). Mit "Hg" (inkl. Unterlänge) sitzt der Chip
+    # optisch zu tief und die Schrift wirkt nach oben verrutscht (Kunden-Feedback 25.09.2026).
+    b = MEASURE.textbbox((0, 0), "H", font=font)
     return b[1], b[3]
 
 
-def shadow_of(layer, radius, alpha, dy):
-    a = layer.split()[-1].point(lambda v: int(v * alpha))
+def shadow_of(layer, radius, alpha, dy, spread=0, dx=0):
+    """Eine Schatten-Ebene. spread>0 weitet die Glyphen-Maske vor dem Weichzeichnen
+    (MaxFilter) – so entsteht ein weicher, dichter Halo statt einer harten Kontur."""
+    a = layer.split()[-1]
+    if spread:
+        a = a.filter(ImageFilter.MaxFilter(2 * int(spread) + 1))
+    a = a.point(lambda v: int(v * alpha))
     sh = Image.new("RGBA", layer.size, (0, 0, 0, 0))
     sh.putalpha(a)
-    sh = sh.filter(ImageFilter.GaussianBlur(radius))
+    if radius:
+        sh = sh.filter(ImageFilter.GaussianBlur(radius))
     out = Image.new("RGBA", layer.size, (0, 0, 0, 0))
-    out.paste(sh, (0, dy), sh)
+    out.paste(sh, (dx, dy), sh)
+    return out
+
+
+def shadow_stack(layer, spec):
+    """spec = dict (eine Ebene) oder Liste von dicts (Schicht-Schatten, unten zuerst).
+    Standard seit 0.11: Kontakt-Halo (eng, dicht) + weicher Fernschatten → lesbar auf Weiß
+    ohne sichtbare Kontur (Kunden-Feedback Katzer 25.09.2026, s. captions.md)."""
+    layers = spec if isinstance(spec, list) else [spec]
+    out = Image.new("RGBA", layer.size, (0, 0, 0, 0))
+    for l in layers:
+        out = Image.alpha_composite(out, shadow_of(layer, **l))
     return out
 
 
@@ -279,7 +301,8 @@ class Renderer:
             x = (self.W - tw) / 2
             line_boxes.append((x, y + top, x + tw, y + bot))
             for it, w in ln:
-                dt.text((x, y), it["w"], font=f, fill=self.text_rgb)
+                dt.text((x, y), it["w"], font=f, fill=self.text_rgb,
+                        stroke_width=st.get("outline", 0), stroke_fill=(0, 0, 0))
                 boxes[id(it)] = (x - st["chip"]["pad_x"], y + top - st["chip"]["pad_y"],
                                  x + w + st["chip"]["pad_x"], y + bot + st["chip"]["pad_y"])
                 x += w + sp
@@ -298,7 +321,7 @@ class Renderer:
                     radius=st["scrim"]["radius"], fill=(0, 0, 0, a))
             scrim = sc
 
-        sh = shadow_of(txt, **st["shadow"])
+        sh = shadow_stack(txt, st["shadow"])
         items = {id(it): it for it in d["words"]}
         self._card_cache[idx] = (txt, sh, scrim, boxes, items)
         return self._card_cache[idx]
@@ -342,11 +365,12 @@ class Renderer:
             for w in ln:
                 if w == emph.get("keyword"):
                     dg.text((x, y), w, font=f, fill=self.accent + (255,))
-                dl.text((x, y), w, font=f, fill=self.text_rgb)
+                dl.text((x, y), w, font=f, fill=self.text_rgb,
+                        stroke_width=st.get("outline", 0), stroke_fill=(0, 0, 0))
                 x += MEASURE.textlength(w, font=f) + sp
             y += st["line_height"]
         glow = glow.filter(ImageFilter.GaussianBlur(st["glow_blur"]))
-        sh = shadow_of(lay, **st["shadow"])
+        sh = shadow_stack(lay, st["shadow"])
         self._emph_cache["b"] = (lay, sh, glow)
         return self._emph_cache["b"]
 
@@ -412,10 +436,11 @@ class Renderer:
                     dc.rounded_rectangle([x - st["chip"]["pad_x"], y + top - st["chip"]["pad_y"],
                                           x + ww + st["chip"]["pad_x"], y + bot + st["chip"]["pad_y"]],
                                          radius=st["chip"]["radius"], fill=self.accent + (255,))
-                dl.text((x, y), w, font=f, fill=self.text_rgb)
+                dl.text((x, y), w, font=f, fill=self.text_rgb,
+                        stroke_width=st.get("outline", 0), stroke_fill=(0, 0, 0))
                 x += ww + sp
             y += st["line_height"]
-        sh = shadow_of(lay, **st["shadow"])
+        sh = shadow_stack(lay, st["shadow"])
         self._hook_cache["h"] = (lay, sh, chip)
         return self._hook_cache["h"]
 
