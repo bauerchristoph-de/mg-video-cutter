@@ -1,6 +1,10 @@
 {
  "_hinweis": "Beispiel. words = Wort-Timings NACH Onset-Audit und Segment-Remap, nicht roh aus Whisper. Aufbau und Regeln: README.md",
  "timeline": { "end": 11.48 },
+ "grade": {
+  "a_roll": "curves=all='0/0 0.25/0.22 0.5/0.52 0.8/0.84 1/0.97',colorbalance=rs=0.03:bs=-0.03:rm=0.03:bm=-0.03,vibrance=intensity=0.25,eq=saturation=1.08,unsharp=5:5:0.4",
+  "b_roll": "curves=all='0/0 0.22/0.30 0.55/0.63 1/1',eq=contrast=1.05:saturation=1.14:gamma=1.04,unsharp=5:5:0.4"
+ },
  "words": [
   { "w": "Wir", "s": 3.0, "e": 3.32 },
   { "w": "wissen", "s": 3.34, "e": 3.66 },
@@ -26,8 +30,8 @@
   { "w": "nicht", "s": 10.14, "e": 10.46 }
  ],
  "hook": {
-  "lines": [["WANN", "SOLLTEST", "DU"], ["DIE", "SECURITY", "HOLEN?"]],
-  "keyword": "SECURITY",
+  "lines": [["Wann", "solltest", "du"], ["die", "Security", "holen?"]],
+  "keyword": null,
   "y": 712,
   "in": 0.18,
   "until": 2.8
@@ -36,8 +40,8 @@
   "onset": 7.3,
   "hold_end": 8.76,
   "end": 8.91,
-  "lines": [["LIEBER", "EINMAL"], ["ZU", "VIEL"]],
-  "keyword": "EINMAL"
+  "lines": [["Lieber", "einmal"], ["zu", "viel"]],
+  "keyword": null
  },
  "cuts": [2.8],
  "boom": [],
