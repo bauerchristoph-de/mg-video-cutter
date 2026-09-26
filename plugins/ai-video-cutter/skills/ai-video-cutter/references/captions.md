@@ -17,7 +17,7 @@ Wort-für-Wort-Highlight: weiße Zeile (Standard-Font Bold), aktuelles Wort auf 
 - Fenster kürzer als 0,02 s nicht emittieren.
 
 ### 2 · `emphasis` — der Highlight-Beat
-Ersetzt die Karaoke-Zeile (nie beides gleichzeitig, nie denselben Text doppelt). 1–3 Wörter, Versalien, schwerster Font-Schnitt. Vier Ebenen, framegenau synchron:
+Ersetzt die Karaoke-Zeile (nie beides gleichzeitig, nie denselben Text doppelt). 1–3 Wörter, Satzschreibung (Versalien nur auf CI-Wunsch), schwerster Font-Schnitt, weiß ohne Chip (Clean-Standard, s. hooks.md). Vier Ebenen, framegenau synchron:
 1. **Snap-Pop**: 0→100 % in 0,2 s, Ease-Out-Back (Overshoot ~8 %), erste 2 Frames Motion-Blur, Land-Jitter ±3 px (2 Frames).
 2. **Punch im Video**: Emphasis-Start ist immer ein Schnitt mit Zoomstufen-Wechsel (+8–15 %).
 3. **Keyword-Glow**: weicher Akzent-Puls hinter genau EINEM Keyword (0,35 s Sinus).
@@ -85,6 +85,9 @@ Ink-Box einmal mit Referenzstring **„H“ (Versalhöhe: Oberkante H bis Grundl
 ALLE Wörter identisch verwenden, sonst springen die Chips beim Wortwechsel. Nicht „Hg": die
 Unterlänge zieht den Chip nach unten, die Schrift wirkt im Chip nach oben verrutscht
 (Kunden-Feedback 25.09.2026: „die Markierung hängt immer unten dran").
+
+### Schatten auf dem Chip (seit 0.12.0)
+Das weiße Wort auf dem Akzent-Chip bekommt einen eigenen, weicheren Schatten (`chip_text_shadow`, Standard radius 3 · alpha 0,55 · dy 2 · spread 1) — sonst liegt es flach auf der Farbfläche (Kunden-Feedback 26.09.2026). Nicht den Zeilen-Schatten verwenden, der macht den Chip schmutzig.
 
 ### Warum Schicht-Schatten (Lesbarkeit auf Weiß ohne Kontur)
 

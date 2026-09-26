@@ -70,7 +70,7 @@ Klären, bevor irgendwas gerendert wird: Ziel des Videos (organisch / Ad / beide
 ### 2 · Transkript + Analyse
 Audio extrahieren, mit Whisper transkribieren (`word_timestamps=True`, Modell medium, `vad_filter=False`). Wort-Timings sind das Rückgrat von allem — aber Whisper hat bekannte Fehler, die korrigiert werden müssen (Bindestrich-Tokens, verschobene Onsets nach Pausen; Details in `references/audio.md` und `references/render-technik.md`).
 
-**Bild-Analyse gehört dazu:** Luma/Sättigung des Materials messen (`signalstats`). Ist das Material flau oder high-key (kein Schwarzpunkt, Sättigung < 0,10), dem Kunden ein dezentes Color Grading VORSCHLAGEN und bei Ja umsetzen — nie ungefragt, und nie auf Fremd-Quellclips (Reaction-Splits) anwenden.
+**Color Grading ist Standard, nicht Option (seit 0.12.0, Kunden-Feedback 09/2026):** Jedes Video wird gegradet — Talking-Head (A-Roll) UND B-Roll/POV UND reine Musik-Montagen: Weißabgleich neutralisieren, Kurve (Schwarzpunkt/Schatten), Sättigung bzw. Vibrance, leichte Schärfe. Der Grade steht im Plan (`"grade": {"a_roll", "b_roll"}`), `qc.py` lässt ohne vollständigen Grade nicht durch; `montage_render.py` lehnt Mini-Grades ab und macht Weißabgleich automatisch. Vorher/Nachher-Frame ansehen, bevor gerendert wird. Ausnahmen nur begründet (`"grade": {"aus": "Grund"}`): Fremd-Quellclips (Reaction-Splits), Bildschirmaufnahmen, ausdrücklicher Kundenwunsch. Werte: `references/render-technik.md` › Color Grading.
 
 ### 3 · Schnittplan (Freigabe-Dokument)
 

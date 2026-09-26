@@ -163,6 +163,26 @@ def main():
     ad = float(aud["streams"][0]["duration"]) if aud.get("streams") else 0.0
     gate("A/V-Dauer", abs(vd - ad) < 0.1, f"Video {vd:.3f}s · Audio {ad:.3f}s · Δ {abs(vd-ad):.3f}s")
 
+    # 1b -------------------------------------------------- Color Grading (Pflicht seit 0.12.0)
+    # Jedes Video wird gegradet — Talking-Head UND B-Roll. Der Plan deklariert den verwendeten Grade
+    # ("grade": {"a_roll": "...", "b_roll": "..."}) oder begründet die Ausnahme ("grade": {"aus": "Grund"}).
+    # Mini-Grades (nur eq=contrast/saturation) sind 09/2026 bei B-Roll durchgerutscht -> hier FAIL.
+    if a.plan and os.path.exists(a.plan):
+        g = json.load(open(a.plan, encoding="utf-8")).get("grade")
+        def _voll(x): x = (x or "").replace(" ", ""); return "curves" in x and bool(re.search(r"saturation=|vibrance", x))
+        if isinstance(g, dict) and g.get("aus"):
+            gate("Color Grading", True, f"bewusst aus: {g['aus']}")
+        elif isinstance(g, dict) and g.get("a_roll") and _voll(g["a_roll"]) and _voll(g.get("b_roll", g["a_roll"])):
+            gate("Color Grading", True, "A- und B-Roll mit curves + Sättigung/Vibrance")
+        else:
+            gate("Color Grading", False, "Plan ohne vollständigen Grade (\"grade\": {a_roll, b_roll} mit curves + "
+                 "Sättigung/Vibrance) — siehe render-technik.md › Color Grading")
+    r = sh(["ffmpeg", "-v", "error", "-i", a.video, "-vf", "fps=1,signalstats,metadata=print:file=-", "-f", "null", "-"], timeout=180)
+    lo = [float(x) for x in re.findall(r"YLOW=([\d.]+)", r.stdout)]; hi = [float(x) for x in re.findall(r"YHIGH=([\d.]+)", r.stdout)]
+    if lo and hi:
+        span = sum(h - l for h, l in zip(hi, lo)) / len(lo)
+        print(f"  [INFO] Tonwertumfang Ø {span:.0f} (YHIGH−YLOW){' — flau: Kurve kräftiger / Schwarzpunkt setzen' if span < 60 else ''}")
+
     # 2 --------------------------------------------------- Freeze-Scan
     r = sh(["ffmpeg", "-v", "info", "-i", a.video, "-vf", "freezedetect=n=-60dB:d=0.5",
             "-map", "0:v:0", "-f", "null", "-"])

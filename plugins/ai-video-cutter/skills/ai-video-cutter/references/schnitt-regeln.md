@@ -94,4 +94,5 @@ Im Briefing wird das Ziel festgelegt — die Ausspielungen unterscheiden sich sy
 - BPM + Beatgrid messen (librosa), Hits/Stille/Drops per RMS im 0,1-s-Raster — **nie nach Gehör timen**. Cuts auf Beat, Titel auf Drop.
 - Musik 18–25 dB unter Sprache mit 0,4-s-Rampen; unter Jubel/Action höher. Clips mit eigener Musik muten.
 - Nur lizenziertes Material (Envato/Artlist). Keine Trending-Sounds, wenn Dritte teilen sollen. Bei Clip-Montagen für den eigenen Kanal entscheidet der Kunde (eingebrannt vs. Sound in der App) — `clip-montage.md`.
+- Serien mit Talking-Head: ein Song für die ganze Serie (Wiedererkennung), aber pro Teil ein anderer Einsatzpunkt (Refrain, Bridge, Instrumentalteil — Liedtext per Whisper auf dem Song finden, dann auf Downbeat legen). Nie jeder Teil derselbe Ausschnitt.
 - Musik-Offset auf den Beat-Einsatz, nie ins leise Intro; Musik läuft bis zum letzten Frame. Beat-Raster und Liedstelle: `scripts/montage_beatgrid.py`.
