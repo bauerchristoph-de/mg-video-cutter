@@ -11,8 +11,8 @@ liegt im 9:16-Crop mitten auf dem Gesicht.
 - **Gleiche Typografie wie die Untertitel** — derselbe Font, derselbe schwerste Schnitt, dasselbe
   Off-White, derselbe Schatten. Der Hook hat KEINE eigene Design-Sprache; genau das macht ihn
   „typisch Instagram".
-- Fette VERSALIEN, max. 2 Zeilen, kurz („WANN SOLLTEST DU DIE SECURITY HOLEN?").
-- **Ein Keyword auf Akzent-Chip** (gleiche Chip-Logik wie Karaoke) — nicht mehr.
+- **Satzschreibung statt Versalien** (Standard seit 0.12.0, Kunden-Feedback 09/2026: „cooler, nicht all caps"): fett, max. 2 Zeilen, kurz („Wann solltest du die Security holen?"). Versalien nur, wenn die Kunden-CI sie ausdrücklich verlangt.
+- **Clean-Standard: Akzentfarbe NUR auf dem aktiven Untertitel-Wort.** Hook, Zwischenhook, Teaser und Emphasis sind weiß mit Schicht-Schatten, ohne Chip. Ein Keyword-Chip im Hook nur, wenn die Kunden-Config es will (`hook.keyword`) — sonst wirkt das Video bunt statt hochwertig.
 - Weicher Schatten statt Box; keine weißen iOS-Sticker-Boxen, keine Rahmen.
 - Einsatz mit Pop-In (gleiche Snap-Pop-Mechanik wie Emphasis, dezenter skaliert).
 
@@ -48,4 +48,3 @@ schlägt generisches „Folge mir"; in den letzten 3–5 s; 5–7 Wörter; als T
   Kamera schaut.
 - Der nächste Teil beantwortet den offenen Loop in den ersten 5 s und bringt in den ersten 3 s
   Kontext („Teil 2 · Implantat-Serie"), damit er auch allein funktioniert.
-

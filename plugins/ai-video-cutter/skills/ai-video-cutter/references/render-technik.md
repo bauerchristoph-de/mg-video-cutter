@@ -18,6 +18,20 @@ Architektur für reproduzierbare, resumable Renders mit ffmpeg — entstanden au
 1. Tokens mit führendem Bindestrich („Live", „-Online", „-Workshop") zum Vorgänger mergen.
 2. **Onset-Audit:** 4-kHz-Mono-Hüllkurve (10-ms-RMS) der Schnitt-Timeline exportieren; jedes Wort mit vorausgehender Pause gegen den echten Energie-Anstieg prüfen. Whisper ist nach Pausen oft 0,2–0,3 s zu früh. Detektor-Bias beachten: −0,15 s zur Anstiegsflanke ist normal, kein Fehler — nur echte Ausreißer korrigieren.
 3. Korrekturen als `ONSET_FIX`-Dict im Generator, mit assert (jeder Key trifft exakt ein Wort). Nie Rohdaten-Dateien editieren.
+4. **Untertitel-Wörter aus der FERTIG geschnittenen Stimmspur transkribieren**, nicht aus dem Rohclip mit Remap (seit 0.12.0). Remap verliert Wörter an Segmentkanten („hergestellt", „als", „und" fehlten im Untertitel). Danach Text-Check gegen das Skript per difflib, tolerant bei Dialekt/Füllwörtern — Abbruch nur bei abweichenden Inhaltswörtern > 4 Zeichen. `initial_prompt` mit dem Skript-Wortlaut hilft Whisper bei Fachbegriffen.
+5. Wort-Zeiten härten: Wörter mit Länge 0 auf mind. 0,08 s setzen; Wörter, die zwischen zwei Segmente fallen, dem Segment mit der größten Überlappung zuordnen; danach assert „jedes gesprochene Wort genau einmal im Untertitel".
+
+## Color Grading (Pflicht, seit 0.12.0)
+
+| Ebene | Grade (ffmpeg) | Wirkung |
+|---|---|---|
+| A-Roll Talking-Head | `curves=all='0/0 0.25/0.22 0.5/0.52 0.8/0.84 1/0.97',colorbalance=rs=0.03:bs=-0.03:rm=0.03:bm=-0.03,vibrance=intensity=0.25,eq=saturation=1.08,unsharp=5:5:0.4` | leichte S-Kurve, warme Mitten/kühle Schatten, Haut lebendig ohne Orange-Stich (Kunde: „sehr, sehr geil“) |
+| B-Roll / POV / Montage | `curves=all='0/0 0.22/0.30 0.55/0.63 1/1',eq=contrast=1.05:saturation=1.14:gamma=1.04,unsharp=5:5:0.4` + Weißabgleich | Innenraum-Handyvideo heller, Farbe zurück |
+| Weißabgleich | `colorchannelmixer=rr=..:gg=..:bb=..` aus nahezu neutralen Pixeln, gedeckelt ±6 % | Laborlicht/Leuchtstoff grün-blau neutralisieren; nie Grauwelt übers ganze Bild (orange Modelle/Haut würden „neutralisiert") |
+
+- **Falle 09/2026:** B-Roll bekam nur `eq=contrast=1.03:saturation=1.05`, Montagen `eq=contrast=1.04:saturation=1.06` — im Feed sichtbar flauer als die A-Roll. Deshalb: B-Roll gleich stark graden wie A-Roll, nur mit eigener Kurve.
+- Nicht graden: Bildschirmaufnahmen/CAD-Screens (höchstens Helligkeit angleichen), Fremd-Quellclips.
+- `qc.py` gibt den Tonwertumfang (Ø YHIGH−YLOW) als INFO aus; unter 60 ist das Bild flau → Kurve kräftiger.
 
 ## QC-Gates (vor jeder Lieferung, alle Pflicht)
 
