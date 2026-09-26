@@ -48,6 +48,9 @@ DEFAULTS = {
         "gap_fill": 0.25,         # kleinere Lücken werden geschlossen
         "tail": 0.15,             # Nachlauf letztes Wort
         "chip": {"pad_x": 13, "pad_y": 7, "radius": 11},
+        # Schatten des Worts AUF dem Chip (sonst liegt das weiße Wort flach auf Orange –
+        # Kunden-Feedback 26.09.2026). Weicher als der Zeilen-Schatten, sonst wirkt der Chip schmutzig.
+        "chip_text_shadow": [{"radius": 3, "alpha": 0.55, "dy": 2, "spread": 1}],
         "shadow": [{"radius": 22, "alpha": 0.80, "dy": 6, "spread": 2},   # Fernschatten
                    {"radius": 4, "alpha": 1.00, "dy": 1, "spread": 4}],  # Kontakt-Halo
         "outline": 0,             # KEINE harte Kontur – Lesbarkeit kommt aus dem Schicht-Schatten
@@ -66,6 +69,7 @@ DEFAULTS = {
         "shadow": [{"radius": 24, "alpha": 0.80, "dy": 6, "spread": 2},
                    {"radius": 4, "alpha": 1.00, "dy": 1, "spread": 4}],
         "chip": {"pad_x": 15, "pad_y": 8, "radius": 12},
+        "chip_text_shadow": [{"radius": 3, "alpha": 0.55, "dy": 2, "spread": 1}],
     },
 }
 
@@ -270,6 +274,7 @@ class Renderer:
         self.band_y = int(self.H * self.k["band_y_pct"])
         self.plan = plan
         self._card_cache, self._emph_cache, self._hook_cache = {}, {}, {}
+        self._chip_sh = {}
 
     # -- Karaoke ---------------------------------------------------
     def card_layers(self, idx, d):
@@ -345,7 +350,18 @@ class Renderer:
             ImageDraw.Draw(chip).rounded_rectangle(
                 boxes[act], radius=self.k["chip"]["radius"], fill=self.accent + (255,))
             img.alpha_composite(chip)
+            img.alpha_composite(self.chip_word_shadow(idx, txt, boxes[act], act))
         img.alpha_composite(txt)
+
+    def chip_word_shadow(self, idx, txt, box, act):
+        """Schatten nur des aktiven Worts, liegt zwischen Chip und Schrift."""
+        k = (idx, act)
+        if k not in self._chip_sh:
+            x0, y0, x1, y1 = (int(v) for v in box)
+            only = Image.new("RGBA", (self.W, self.H), (0, 0, 0, 0))
+            only.paste(txt.crop((x0, y0, x1, y1)), (x0, y0))
+            self._chip_sh[k] = shadow_stack(only, self.k.get("chip_text_shadow") or [])
+        return self._chip_sh[k]
 
     # -- Emphasis --------------------------------------------------
     def emph_base(self, emph):
@@ -425,7 +441,8 @@ class Renderer:
         top, bot = ink_band(f)
         lay = Image.new("RGBA", (self.W, self.H), (0, 0, 0, 0))
         chip = Image.new("RGBA", (self.W, self.H), (0, 0, 0, 0))
-        dl, dc = ImageDraw.Draw(lay), ImageDraw.Draw(chip)
+        kw = Image.new("RGBA", (self.W, self.H), (0, 0, 0, 0))
+        dl, dc, dk = ImageDraw.Draw(lay), ImageDraw.Draw(chip), ImageDraw.Draw(kw)
         y = hook["y"]
         for ln in hook["lines"]:
             tw = sum(MEASURE.textlength(w, font=f) for w in ln) + sp * (len(ln) - 1)
@@ -436,11 +453,14 @@ class Renderer:
                     dc.rounded_rectangle([x - st["chip"]["pad_x"], y + top - st["chip"]["pad_y"],
                                           x + ww + st["chip"]["pad_x"], y + bot + st["chip"]["pad_y"]],
                                          radius=st["chip"]["radius"], fill=self.accent + (255,))
+                    dk.text((x, y), w, font=f, fill=self.text_rgb)
                 dl.text((x, y), w, font=f, fill=self.text_rgb,
                         stroke_width=st.get("outline", 0), stroke_fill=(0, 0, 0))
                 x += ww + sp
             y += st["line_height"]
         sh = shadow_stack(lay, st["shadow"])
+        if st.get("chip_text_shadow"):
+            chip = Image.alpha_composite(chip, shadow_stack(kw, st["chip_text_shadow"]))
         self._hook_cache["h"] = (lay, sh, chip)
         return self._hook_cache["h"]
 
