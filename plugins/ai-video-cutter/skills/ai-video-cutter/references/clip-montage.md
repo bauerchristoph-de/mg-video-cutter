@@ -35,7 +35,7 @@ Werbung. Der Kunde will User-Generated-Content-Optik:
 | Bauchbinde | „Name – HH:MM Uhr", darunter optional ein Kommentar | y ≈ 1290, lange Namen automatisch kleiner (max. 940 px breit) |
 | Kommentar | sachlich, aus echten Fakten, **keine Gags** | „(musste noch bei der Zweiten trainieren)" ja — „(Banane first)" nein |
 | Bewegung | Push-in 100 → 105 % je Clip, harte Schnitte, Pop-in der Texte 3 Frames | kein Fade am Ende — das Reel loopt |
-| Grade | Innenraum-Handyvideo heller: Schatten anheben, etwas Sättigung, leicht schärfen | `curves 0.22→0.30, 0.55→0.63` · `eq contrast 1.05 sat 1.14 gamma 1.04` · `unsharp 5:5:0.4` |
+| Grade (Pflicht) | Innenraum-Handyvideo heller: Schatten anheben, etwas Sättigung, leicht schärfen; Weißabgleich automatisch je Slide | Standard `GRADE_STD` in `montage_render.py`: `curves 0.22→0.30, 0.55→0.63` · `eq contrast 1.05 sat 1.14 gamma 1.04` · `unsharp 5:5:0.4`. Eigener Plan-`grade` nur vollständig (curves + Sättigung) — Mini-Grades bricht das Skript ab |
 
 **Warum der Titel unten steht:** Ein Kasten oben verdeckt Köpfe (Korrektur: „schneidet
 dem Coach den Kopf ab"), und das Thumbnail zeigt das Thema nur, wenn Titel und erste
@@ -65,9 +65,16 @@ Bauchbinde im ersten Frame zusammen sichtbar sind. Zwei Zeilen, schlank, kein Ka
    `audio.md` („loudnorm im Filtergraph schneidet das Ende ab").
 4. **Originalton bleibt hörbar:** Ambiente (Schritte, Türen, Stimmen) auf −24 LUFS unter
    der Musik (−16,5 LUFS); danach linear auf −14 LUFS gemastert wie jedes Video (`audio.md`). Ganz stumm wirkt es wie ein Werbespot.
-5. Lizenz: Für Kundenkonten, die das Video selbst posten, entscheidet der Kunde, ob der
+5. **Songauswahl passt zur Marke und wiederholt sich nicht** (Kunden-Feedback 09/2026): innerhalb eines Monats kein Song in zwei Montagen; der Song muss zum Motiv passen (Maschine/Handwerk → treibend, Rock/Electro; ruhige Detailarbeit → Keys/Lo-Fi; verspielte 80er-Pop-Hymnen nur für lockere Team-Momente — „Girls Just Want To Have Fun" zur Fräse wurde abgelehnt). Bei Serien: ein Song als Wiedererkennung, aber **jeder Teil eine andere Liedstelle** (auf Downbeat, Liedstellen im Kunden-Learning notieren) — fünfmal derselbe Ausschnitt wirkt wie Kopie.
+6. Lizenz: Für Kundenkonten, die das Video selbst posten, entscheidet der Kunde, ob der
    Song eingebrannt wird oder ob er das Video stumm hochlädt und den Sound in der App
    wählt (Sound-Tag = Reichweite, kein Copyright-Risiko). Einmal anbieten, nicht wiederholen.
+
+## Gates in `montage_render.py` (seit 0.12.0, Abbruch statt Warnung)
+
+- **Überlappung:** Zwei Slides aus derselben Quelle mit überlappendem Zeitfenster → Abbruch. Überlappende Ausschnitte erzeugen einen Rückwärtssprung (Mock-up v1: Slide 2 begann 0,185 s vor dem Ende von Slide 1 → „Videofehler kurz vor Sekunde 2"). Soll ein Clip durchlaufen, EIN Slide mit mehreren Textwechseln bauen.
+- **Grade:** unvollständiger Plan-Grade → Abbruch (s. Tabelle oben).
+- **Segment-Cache mit Schlüssel:** Segmente werden neu gerendert, sobald sich Slide, Grade, Weißabgleich oder Overlay-PNGs ändern (`seg/<id>.key`). Vorher blieb nach einer Textkorrektur der alte Text im Video.
 
 ## Ablauf (kurz, weil das Format kurz ist)
 
@@ -96,3 +103,7 @@ Bauchbinde im ersten Frame zusammen sichtbar sind. Zwei Zeilen, schlank, kein Ka
 | „Man hört keine Stimmen" | Ambiente zu leise (−30) | −24 LUFS |
 | „Da sind fremde Stimmen in der Musik" | Ton aus dem Vorlagen-Video | Original-Song + align |
 | „Kommentare zu affig" | eigene Gags | nur Fakten vom Kunden |
+| „Kurz vor Sekunde 2 ein Videofehler" | zwei Slides aus demselben Clip überlappen → Rückwärtssprung | Überlappungs-Gate; durchlaufender Clip = ein Slide |
+| „Überall dasselbe Lied" / „Lied passt nicht" | Song mehrfach im Monat bzw. nicht zur Marke | Songregel oben, Liste der Songs je Monat im Kunden-Learning |
+| „Farben flau" / „Color Grading fehlt" | Mini-Grade im Plan | Standard-Grade + Weißabgleich, Vorher/Nachher-Frame |
+| „Kreide ist nicht weich" | Fachtext ungenau formuliert | Fachaussagen wörtlich vom Kunden prüfen lassen; lieber „fühlt sich an wie" als falsche Materialeigenschaft |
