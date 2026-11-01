@@ -40,6 +40,8 @@ darüber hinaus wird gezielt nachgeschlagen — nicht vorsorglich gelesen.
 2. `marken-profil.md` im Kundenordner — die angelernte Brand Voice (Tonalität, Wortschatz, Hooks, Video-Stil je Account). Fehlt es, die Marken-Analyse nachholen (`references/marken-analyse.md`) — ohne Profil keine Captions.
 3. `kunden-learnings.md` im Kundenordner — alles, was dieser Kunde dem System schon beigebracht hat. Anwenden statt wiederholen.
 4. `references/schnitt-regeln.md` — Schnitt, Zooms, Transitions, Pausen.
+   **4b. Bei Talking-Head-Material (Sprecher in die Kamera): `references/talking-head-schnittfehler.md`** — 24 Regeln aus realen Kunden-Reklamationen: Schnittpunkte aus der Energiekurve statt aus Whisper, Satzton (f0) vor dem Schnitt prüfen, Enden/Folgesätze/Kundenstimmen, Hook-Breite, Untertitelgröße für den Web-Player, True Peak nach dem AAC-Encode, Tempo-Varianten, Zoom-Rhythmus für Kurzversionen.
+   **4c. Bei Verkaufs-/Danke-Seiten-/Pitch-Videos (am Ende steht ein Angebot): `references/konversionsvideo-overlays.md`** — 27 Regeln: Start-Hook mit Live-Countdown, Untertitel aus im Hook, Teaser + Rehook ohne Angebot zu verraten, Wert-/Ticket-Karte an Wörter gekoppelt, Pitch-Varianten kürzen, Quellauflösung und Bitrate ehrlich benennen, Master + Vorschau getrennt, große Dateien in Teilen liefern, Render-Betrieb. Beispielcode: `scripts/overlays_beispiel.py`.
 5. `references/captions.md` — Untertitel-System (Karaoke + Emphasis-Presets, vermessener Referenz-Standard, Kontrast-Gate).
 6. `references/hooks.md` — Hook-Overlays (Creator-Stil, Positionsregeln).
 7. `references/audio.md` — Ton-Pipeline (Fades, Master, SFX, bekannte Fallen).
@@ -149,7 +151,7 @@ sauberen Durchläufen abgeschaltet, bleiben sie an — sie sind der Ersatz für 
 nicht dessen Beifahrer.
 
 ### 6 · Lieferung
-Master in voller Qualität in den Ordner `fertig/` + kleine Preview (480p) in den Chat. Bei Feedback: Version hochzählen, nie überschreiben.
+Master in voller Qualität in den Ordner `fertig/` + kleine Preview (480p) in den Chat. Bei Feedback: Version hochzählen, nie überschreiben. **Master und Vorschau nie verwechselbar benennen, und die Bitrate des Masters mindestens so hoch wie die des Originals halten** (Details: `references/konversionsvideo-overlays.md` §7).
 
 ### 7 · Begleit-Content (optional, nach Video-Abnahme)
 Was in der Config unter `begleit_content` aktiviert ist, wird mitgeliefert: Caption pro Kanal, Titel-/Hook-Varianten, Post-Kurzfassung — alles aus dem Transkript, im Kunden-Wording. Regeln: `references/begleit-content.md`.
@@ -169,6 +171,6 @@ Alle Korrekturen der Feedbackrunden kategorisieren: kundenspezifisch → `kunden
 
 ## Grenzen
 
-- Kein Ersatz für fehlendes Material: Aus schlechtem Rohvideo (unverständlicher Ton, Dauerwackeln) wird kein gutes Reel — dann ehrlich sagen, was fehlt.
+- Kein Ersatz für fehlendes Material: Aus schlechtem Rohvideo (unverständlicher Ton, Dauerwackeln) wird kein gutes Reel — dann ehrlich sagen, was fehlt. Gleiches gilt für die Auflösung: Aus 720p wird durch Hochskalieren kein echtes 1080p — das vor der Lieferung sagen.
 - Musik-Einbindung nur mit lizenziertem Material des Kunden (Envato o. ä.); keine Trending-Sounds, wenn Dritte das Video teilen sollen. Bei Clip-Montagen für den eigenen Kanal entscheidet der Kunde (Song eingebrannt oder Sound in der App) — `references/clip-montage.md`.
 - Rechenzeit: ~2–5 Minuten Renderzeit pro Videominute je nach Rechner — bei Iterationen einplanen.
