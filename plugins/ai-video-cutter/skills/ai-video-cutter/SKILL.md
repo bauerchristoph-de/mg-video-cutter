@@ -40,6 +40,7 @@ darüber hinaus wird gezielt nachgeschlagen — nicht vorsorglich gelesen.
 2. `marken-profil.md` im Kundenordner — die angelernte Brand Voice (Tonalität, Wortschatz, Hooks, Video-Stil je Account). Fehlt es, die Marken-Analyse nachholen (`references/marken-analyse.md`) — ohne Profil keine Captions.
 3. `kunden-learnings.md` im Kundenordner — alles, was dieser Kunde dem System schon beigebracht hat. Anwenden statt wiederholen.
 4. `references/schnitt-regeln.md` — Schnitt, Zooms, Transitions, Pausen.
+   **4b. Bei Talking-Head-Material (Sprecher in die Kamera): `references/talking-head-schnittfehler.md`** — 24 Regeln aus realen Kunden-Reklamationen: Schnittpunkte aus der Energiekurve statt aus Whisper, Satzton (f0) vor dem Schnitt prüfen, Enden/Folgesätze/Kundenstimmen, Hook-Breite, Untertitelgröße für den Web-Player, True Peak nach dem AAC-Encode, Tempo-Varianten, Zoom-Rhythmus für Kurzversionen.
 5. `references/captions.md` — Untertitel-System (Karaoke + Emphasis-Presets, vermessener Referenz-Standard, Kontrast-Gate).
 6. `references/hooks.md` — Hook-Overlays (Creator-Stil, Positionsregeln).
 7. `references/audio.md` — Ton-Pipeline (Fades, Master, SFX, bekannte Fallen).
@@ -70,7 +71,7 @@ Klären, bevor irgendwas gerendert wird: Ziel des Videos (organisch / Ad / beide
 ### 2 · Transkript + Analyse
 Audio extrahieren, mit Whisper transkribieren (`word_timestamps=True`, Modell medium, `vad_filter=False`). Wort-Timings sind das Rückgrat von allem — aber Whisper hat bekannte Fehler, die korrigiert werden müssen (Bindestrich-Tokens, verschobene Onsets nach Pausen; Details in `references/audio.md` und `references/render-technik.md`).
 
-**Color Grading ist Standard, nicht Option (seit 0.12.0, Kunden-Feedback 09/2026):** Jedes Video wird gegradet — Talking-Head (A-Roll) UND B-Roll/POV UND reine Musik-Montagen: Weißabgleich neutralisieren, Kurve (Schwarzpunkt/Schatten), Sättigung bzw. Vibrance, leichte Schärfe. Der Grade steht im Plan (`"grade": {"a_roll", "b_roll"}`), `qc.py` lässt ohne vollständigen Grade nicht durch; `montage_render.py` lehnt Mini-Grades ab und macht Weißabgleich automatisch. Vorher/Nachher-Frame ansehen, bevor gerendert wird. Ausnahmen nur begründet (`"grade": {"aus": "Grund"}`): Fremd-Quellclips (Reaction-Splits), Bildschirmaufnahmen, ausdrücklicher Kundenwunsch. Werte: `references/render-technik.md` › Color Grading.
+**Color Grading ist Standard, nicht Option (seit 0.12.0, Kunden-Feedback 09/2026):** Jedes Video wird gegradet — Talking-Head (A-Roll) UND B-Roll/POV UND reine Musik-Montagen: Weißabgleich neutralisieren, Kurve (Schwarzpunkt/Schatten), Sättigung bzw. Vibrance, leichte Schärfe. Der Grade steht im Plan (`"grade": {"a_roll", "b_roll"}`), `qc.py` lässt ohne vollständigen Grade nicht durch; `montage_render.py` lehnt Mini-Grades ab und macht Weißabgleich automatisch. Vorher/Nachher-Frame ansehen, bevor gerendert wird. Ausnahmen nur begründet (`"grade": {"aus": "Grund"}`): Fremd-Quellclips (Reaction-Splits), Bildschirmaufnahmen, ausdrückliche Kundenwunsch. Werte: `references/render-technik.md` › Color Grading.
 
 ### 3 · Schnittplan (Freigabe-Dokument)
 
